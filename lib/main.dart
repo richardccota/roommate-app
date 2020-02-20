@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() => runApp(MyApp());
 
@@ -42,23 +43,30 @@ class _MyHomePageState extends State<MyHomePage> {
                       SizedBox(
                         height: 90
                       ),
-                      TextField(
+                      TextFormField(
                         decoration: InputDecoration(
                           labelText: ("Username"),
+                          icon: Icon(Icons.account_box,
+                            color: Colors.grey),
                         ),
+                        validator: (value) => value.isEmpty ? 'Can\'t be empty' : null,
                       ),
-                      TextField(
+                      TextFormField(
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: ("Password"),
+                          icon: Icon(Icons.lock,
+                            color: Colors.grey),
                         ),
+                        validator: (value) => value.isEmpty ? 'Cannot be empty' : null,
                       ),
                       SizedBox(
                         height: 30
                       ),
                       RaisedButton(
-                          child: Text("Login"),
-                          onPressed: () => {},
+                        elevation: 5,
+                          child: Text(_isLoginForm ? 'Login' : 'Create Account'),
+                          onPressed: validateAndSubmit,
                           color: Colors.lightGreen
                       ),
                     ],
