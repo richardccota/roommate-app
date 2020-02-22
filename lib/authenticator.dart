@@ -32,10 +32,22 @@ class AuthService with ChangeNotifier {
       // since something changed, let's notify the listeners...
       notifyListeners();
       return result;
-    }  catch (e) {
+    } catch (e) {
+      // throw the Firebase AuthException that we caught
+      throw new AuthException(e.code, e.message);
+    }
+  }
+
+  Future<AuthResult> signUp({String email, String password}) async {
+    try {
+      var result = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      // since something changed, let's notify the listeners...
+      notifyListeners();
+      return result;
+    } catch (e) {
       // throw the Firebase AuthException that we caught
       throw new AuthException(e.code, e.message);
     }
   }
 }
-
