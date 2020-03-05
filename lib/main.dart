@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:roommate_app/create_account_page.dart';
 import 'package:roommate_app/login_page.dart';
 import 'package:roommate_app/home_page.dart';
 import 'package:roommate_app/authenticator.dart';
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
             }
             // redirect to the proper page, pass the user into the
             // `HomePage` so we can display the user email in welcome msg     ⇐ NEW
-            return snapshot.hasData ? HomePage(snapshot.data) : LoginPage();
+            return snapshot.hasData ? HomePage(snapshot.data) : CreateAccountPage();
           } else {
             // show loading indicator                                         ⇐ NEW
             return LoadingCircle();

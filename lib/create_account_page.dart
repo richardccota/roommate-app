@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-class LoginPage extends StatefulWidget {
+
+class CreateAccountPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _CreateAccountPageState createState() => _CreateAccountPageState();
 }
 
 Future _buildErrorDialog(BuildContext context, _message) {
@@ -27,10 +29,18 @@ Future _buildErrorDialog(BuildContext context, _message) {
   );
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _CreateAccountPageState extends State<CreateAccountPage> {
   final _formKey = GlobalKey<FormState>();
+  String _fName;
+  String _lName;
   String _password;
   String _email;
+
+  var fNameEditController = TextEditingController();
+  var lNameEditController = TextEditingController();
+
+  final ref = FirebaseDatabase.instance.reference();
+
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
       title: 'Flutter layout demo',
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Roommate App Login'),
+          title: Text('Roommate App Create Account'),
           backgroundColor: Colors.lightGreen,
         ),
         body: Container(
@@ -47,10 +57,30 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: <Widget>[
                   SizedBox(
-                    height: 100
+                      height: 100
                   ),
-                  Text("Please login to your Account"),
+                  Text("Please enter your information"),
                   SizedBox(height: 60),
+                  TextFormField(
+                    controller: fNameEditController,
+                    onSaved: (value) => _fName = value,
+                    decoration: InputDecoration(
+                      labelText: ("First Name"),
+                      icon: Icon(Icons.account_box, color: Colors.grey),
+                    ),
+                    validator: (value) =>
+                    value.isEmpty ? 'Can\'t be empty' : null,
+                  ),
+                  TextFormField(
+                    controller: lNameEditController,
+                    onSaved: (value) => _lName = value,
+                    decoration: InputDecoration(
+                      labelText: ("Last Name"),
+                      icon: Icon(Icons.account_box, color: Colors.grey),
+                    ),
+                    validator: (value) =>
+                    value.isEmpty ? 'Can\'t be empty' : null,
+                  ),
                   TextFormField(
                     onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -58,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                       icon: Icon(Icons.account_box, color: Colors.grey),
                     ),
                     validator: (value) =>
-                        value.isEmpty ? 'Can\'t be empty' : null,
+                    value.isEmpty ? 'Can\'t be empty' : null,
                   ),
                   TextFormField(
                     onSaved: (value) => _password = value,
@@ -68,35 +98,9 @@ class _LoginPageState extends State<LoginPage> {
                       icon: Icon(Icons.lock, color: Colors.grey),
                     ),
                     validator: (value) =>
-                        value.isEmpty ? 'Cannot be empty' : null,
+                    value.isEmpty ? 'Cannot be empty' : null,
                   ),
                   SizedBox(height: 30),
-                  RaisedButton(
-                    elevation: 5,
-                    color: Colors.lightGreen,
-                    child: Text("Login"),
-                    onPressed: () async {
-                      print("PRESSED");
-                      final form = _formKey.currentState;
-                      form.save();
-
-                      // Validate will return true if is valid, or false if invalid.
-                      if (form.validate()) {
-                        try {
-                          AuthResult result =
-                              await Provider.of<AuthService>(context).loginUser(
-                                  email: _email, password: _password);
-                          print(result);
-                        } on AuthException catch (error) {
-                          // handle the firebase specific error
-                          return _buildErrorDialog(context, error.message);
-                        } on Exception catch (error) {
-                          // gracefully handle anything else that might happen..
-                          return _buildErrorDialog(context, error.toString());
-                        }
-                      }
-                    },
-                  ),
                   SizedBox(height: 10),
                   RaisedButton(
                     color: Colors.grey,
@@ -110,9 +114,10 @@ class _LoginPageState extends State<LoginPage> {
                       if (form.validate()) {
                         try {
                           AuthResult result =
-                              await Provider.of<AuthService>(context)
-                                  .signUp(email: _email, password: _password);
+                          await Provider.of<AuthService>(context)
+                              .signUp(email: _email, password: _password);
                           print(result);
+
                         } on AuthException catch (error) {
                           // handle the firebase specific error
                           return _buildErrorDialog(context, error.message);
@@ -120,16 +125,23 @@ class _LoginPageState extends State<LoginPage> {
                           // gracefully handle anything else that might happen..
                           return _buildErrorDialog(context, error.toString());
                         }
+
                       }
+                      FirebaseUser user = await Provider.of<AuthService>(context).getUser();
+                      //write a data: key, value
+                      ref.child("House/Ranch/Users/"+user.uid).set(
+                          {
+                            "User First Name" : fNameEditController.text.toString(),
+                            "User Last Name" : lNameEditController.text.toString()
+                          }
+                      ).then((res) {
+                        print("User is added ");
+                      }).catchError((e) {
+                        print("Failed to add the user. " + e.toString());
+                      });
+
                     },
                   ),
-                  RaisedButton(
-                    color: Colors.blue,
-                    child: Text("Create Account Test"),
-                    onPressed: () {
-                      print("Pressed test");
-                    }
-                  )
                 ],
               )),
         ),
