@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
+import 'package:roommate_app/create_account_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -101,35 +102,13 @@ class _LoginPageState extends State<LoginPage> {
                   RaisedButton(
                     color: Colors.grey,
                     child: Text("Create Account"),
-                    onPressed: () async {
-                      print("PRESSED");
-                      final form = _formKey.currentState;
-                      form.save();
-
-                      // Validate will return true if is valid, or false if invalid.
-                      if (form.validate()) {
-                        try {
-                          AuthResult result =
-                              await Provider.of<AuthService>(context)
-                                  .signUp(email: _email, password: _password);
-                          print(result);
-                        } on AuthException catch (error) {
-                          // handle the firebase specific error
-                          return _buildErrorDialog(context, error.message);
-                        } on Exception catch (error) {
-                          // gracefully handle anything else that might happen..
-                          return _buildErrorDialog(context, error.toString());
-                        }
-                      }
+                      onPressed: () {
+                      Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CreateAccountPage())
+                      );
                     },
                   ),
-                  RaisedButton(
-                    color: Colors.blue,
-                    child: Text("Create Account Test"),
-                    onPressed: () {
-                      print("Pressed test");
-                    }
-                  )
                 ],
               )),
         ),

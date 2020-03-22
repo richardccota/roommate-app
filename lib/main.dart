@@ -34,7 +34,8 @@ class MyApp extends StatelessWidget {
             }
             // redirect to the proper page, pass the user into the
             // `HomePage` so we can display the user email in welcome msg     ⇐ NEW
-            return snapshot.hasData ? HomePage(snapshot.data) : CreateAccountPage();
+            //return NavigatorPage();
+            return snapshot.hasData ? HomePage(snapshot.data) : LoginPage();
           } else {
             // show loading indicator                                         ⇐ NEW
             return LoadingCircle();
@@ -64,6 +65,7 @@ class MyHomePage extends StatefulWidget {
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
+ // _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {

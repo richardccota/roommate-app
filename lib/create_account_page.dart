@@ -42,6 +42,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final ref = FirebaseDatabase.instance.reference();
 
 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -54,6 +55,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         body: Container(
           child: Form(
               key: _formKey,
+
               child: Column(
                 children: <Widget>[
                   SizedBox(
@@ -63,7 +65,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   SizedBox(height: 60),
                   TextFormField(
                     controller: fNameEditController,
-                    onSaved: (value) => _fName = value,
+                    onSaved: (value) => _fName = value.trim(),
                     decoration: InputDecoration(
                       labelText: ("First Name"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -73,7 +75,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   ),
                   TextFormField(
                     controller: lNameEditController,
-                    onSaved: (value) => _lName = value,
+                    onSaved: (value) => _lName = value.trim(),
                     decoration: InputDecoration(
                       labelText: ("Last Name"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -82,7 +84,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     value.isEmpty ? 'Can\'t be empty' : null,
                   ),
                   TextFormField(
-                    onSaved: (value) => _email = value,
+                    onSaved: (value) => _email = value.trim(),
                     decoration: InputDecoration(
                       labelText: ("Email"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -115,7 +117,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         try {
                           AuthResult result =
                           await Provider.of<AuthService>(context)
-                              .signUp(email: _email, password: _password);
+                              .signUp(email: _email.trim(), password: _password);
                           print(result);
 
                         } on AuthException catch (error) {
@@ -131,8 +133,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       //write a data: key, value
                       ref.child("House/Ranch/Users/"+user.uid).set(
                           {
-                            "User First Name" : fNameEditController.text.toString(),
-                            "User Last Name" : lNameEditController.text.toString()
+                            "User First Name" : fNameEditController.text.toString().trim(),
+                            "User Last Name" : lNameEditController.text.toString().trim()
                           }
                       ).then((res) {
                         print("User is added ");

@@ -1,8 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:roommate_app/chore_page.dart';
+import 'package:roommate_app/home_page.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser currentUser; // ⇐ NEW
@@ -13,93 +14,54 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+FirebaseUser _currentUser;
+
 class _HomePageState extends State<HomePage> {
 
-  var idEditController = TextEditingController();
-  var nameEditController = TextEditingController();
-  var majorEditController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final ref = FirebaseDatabase.instance.reference();
+  initUser() async {
+    _currentUser = await _auth.currentUser();
+  }
+
+  int _selectedIndex = 0;
+
+  List<Widget> _widgetOptions = [
+    Text("Screen 1"),
+    ChorePage(_currentUser),
+    Text("Screen 3"),
+  ];
+
+  void _onTapBottomNavBar(index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    print("screen $_selectedIndex has been chosen");
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Home Flutter Firebase"),
-        //actions: <Widget>[LogoutButton()],
-      ),
-      body: Column(
-        children: <Widget>[
-          SizedBox(height: 20.0), // ⇐ NEW
-          Text(
-            // ⇐ NEW
-            'Home Page Flutter Firebase  Content',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            title: Text("Shopping List"),
+            icon: Icon(Icons.home),
           ),
-          SizedBox(height: 20.0), // ⇐ NEW
-          Text(
-            // ⇐ NEW
-            "Welcome ${widget.currentUser.email}",
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic),
+          BottomNavigationBarItem(
+            title: Text("Chores"),
+            icon: Icon(Icons.account_box),
           ),
-          SizedBox(height: 18.0),
-          TextFormField(
-            controller: idEditController,
-            decoration: InputDecoration(
-              labelText: ("Chore"),
-              icon: Icon(Icons.lock, color: Colors.grey),
-            ),
+          BottomNavigationBarItem(
+            title: Text("Other"),
+            icon: Icon(Icons.email),
           ),
-          TextFormField(
-            controller: nameEditController,
-            decoration: InputDecoration(
-              labelText: ("Assign To"),
-              icon: Icon(Icons.lock, color: Colors.grey),
-            ),
-          ),
-
-
-          RaisedButton(
-              child: Text("UPDATE"),
-              onPressed: () {
-                print(idEditController.text.toString());
-                print(nameEditController.text.toString());
-
-                //write a data: key, value
-                ref.child("House/Ranch/Chores/"+idEditController.text.toString()).set(
-                    {
-                      "Chore Name" : nameEditController.text.toString()
-                    }
-                ).then((res) {
-                  print("Chore is added ");
-                }).catchError((e) {
-                  print("Failed to add the chore. " + e.toString());
-                });
-
-              }
-          ),
-          RaisedButton(
-              child: Text("LOGOUT"),
-              onPressed: () async {
-                await Provider.of<AuthService>(context).logout();
-              }),
-
-          Expanded(
-            child: ListView.builder(
-              itemCount: 30,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  height: 50,
-                  child: Center(child: Text("HI $index"))
-                );
-              },
-            )
-          )
         ],
+        currentIndex: _selectedIndex,
+        onTap: _onTapBottomNavBar,
       ),
+      body:
+          _widgetOptions.elementAt(_selectedIndex)
     );
   }
 }
