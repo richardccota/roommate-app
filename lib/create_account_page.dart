@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:roommate_app/home_page.dart';
 
 
 class CreateAccountPage extends StatefulWidget {
@@ -31,6 +32,11 @@ Future _buildErrorDialog(BuildContext context, _message) {
 
 class _CreateAccountPageState extends State<CreateAccountPage> {
   final _formKey = GlobalKey<FormState>();
+  final FocusNode _fNameFocus = FocusNode();
+  final FocusNode _lNameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+
   String _fName;
   String _lName;
   String _password;
@@ -41,6 +47,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
   final ref = FirebaseDatabase.instance.reference();
 
+  _fieldFocusChange(BuildContext context, FocusNode currentFocus,FocusNode nextFocus) {
+    currentFocus.unfocus();
+    FocusScope.of(context).requestFocus(nextFocus);
+  }
 
 
   @override
@@ -52,7 +62,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           title: Text('Roommate App Create Account'),
           backgroundColor: Colors.lightGreen,
         ),
-        body: Container(
+        body: SingleChildScrollView(
           child: Form(
               key: _formKey,
 
@@ -62,10 +72,15 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       height: 100
                   ),
                   Text("Please enter your information"),
-                  SizedBox(height: 60),
+                  //SizedBox(height: 60),
                   TextFormField(
                     controller: fNameEditController,
                     onSaved: (value) => _fName = value.trim(),
+                    focusNode: _fNameFocus,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (term){
+                      _fieldFocusChange(context, _fNameFocus, _lNameFocus);
+                    },
                     decoration: InputDecoration(
                       labelText: ("First Name"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -76,6 +91,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   TextFormField(
                     controller: lNameEditController,
                     onSaved: (value) => _lName = value.trim(),
+                    focusNode: _lNameFocus,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (term){
+                      _fieldFocusChange(context, _lNameFocus, _emailFocus);
+                    },
                     decoration: InputDecoration(
                       labelText: ("Last Name"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -85,6 +105,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   ),
                   TextFormField(
                     onSaved: (value) => _email = value.trim(),
+                    focusNode: _emailFocus,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (term){
+                      _fieldFocusChange(context, _emailFocus, _passwordFocus);
+                    },
                     decoration: InputDecoration(
                       labelText: ("Email"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -94,6 +119,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   ),
                   TextFormField(
                     onSaved: (value) => _password = value,
+                    focusNode: _passwordFocus,
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: ("Password"),
@@ -141,7 +167,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       }).catchError((e) {
                         print("Failed to add the user. " + e.toString());
                       });
-
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage(user))
+                      );
                     },
                   ),
                 ],

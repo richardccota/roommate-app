@@ -7,16 +7,16 @@ import 'package:roommate_app/login_page.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 
-class ChorePage extends StatefulWidget {
+class ShoppingListPage extends StatefulWidget {
   final FirebaseUser currentUser;
 
-  ChorePage(this.currentUser);
+  ShoppingListPage(this.currentUser);
 
   @override
-  _ChorePageState createState() => _ChorePageState();
+  _ShoppingListPageState createState() => _ShoppingListPageState();
 }
 
-class _ChorePageState extends State<ChorePage> {
+class _ShoppingListPageState extends State<ShoppingListPage> {
   final FocusNode _choreFocus = FocusNode();
   final FocusNode _assignFocus = FocusNode();
 
@@ -232,7 +232,7 @@ class _ChorePageState extends State<ChorePage> {
         children: <Widget>[
           SizedBox(height: 25.0),
           Text(
-            'Chore List',
+            'Shopping List',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 20.0),
@@ -247,17 +247,17 @@ class _ChorePageState extends State<ChorePage> {
           SizedBox(height: 18.0),
           Expanded(
               child: ListView.builder(
-            itemCount: studentList.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                height: 50,
-                child: Center(
-                    child: Text(
-                        "${studentList[index]['Chore Assigned To']} has to ${studentList[index]['Chore Name']} by ${studentList[index]['Date Due']} at ${studentList[index]['Time Due']}")),
-                //child: Center(child: Text("Hi ${studentList[index]['Chore Assigned To']}, $userFName 's chore is ${studentList[index]['Chore Name']}")),
-              );
-            },
-          )),
+                itemCount: studentList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                    height: 50,
+                    child: Center(
+                        child: Text(
+                            "${studentList[index]['Chore Assigned To']} has to ${studentList[index]['Chore Name']} by ${studentList[index]['Date Due']} at ${studentList[index]['Time Due']}")),
+                    //child: Center(child: Text("Hi ${studentList[index]['Chore Assigned To']}, $userFName 's chore is ${studentList[index]['Chore Name']}")),
+                  );
+                },
+              )),
           TextFormField(
             controller: choreEditController,
             focusNode: _choreFocus,
@@ -334,7 +334,7 @@ class _ChorePageState extends State<ChorePage> {
                 final time = await showTimePicker(
                   context: context,
                   initialTime:
-                      TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
+                  TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
                 );
                 return DateTimeField.convert(time);
               }),

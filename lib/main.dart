@@ -27,17 +27,17 @@ class MyApp extends StatelessWidget {
         builder: (context, AsyncSnapshot<FirebaseUser> snapshot) {
           //          ⇐ NEW
           if (snapshot.connectionState == ConnectionState.done) {
-            // log error to console                                            ⇐ NEW
+            // log error to console
             if (snapshot.error != null) {
               print("error");
               return Text(snapshot.error.toString());
             }
             // redirect to the proper page, pass the user into the
-            // `HomePage` so we can display the user email in welcome msg     ⇐ NEW
+            // `HomePage` so we can display the user email in welcome msg
             //return NavigatorPage();
             return snapshot.hasData ? HomePage(snapshot.data) : LoginPage();
           } else {
-            // show loading indicator                                         ⇐ NEW
+            // show loading indicator
             return LoadingCircle();
           }
         },

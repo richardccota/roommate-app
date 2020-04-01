@@ -30,8 +30,16 @@ Future _buildErrorDialog(BuildContext context, _message) {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+
   String _password;
   String _email;
+
+  _fieldFocusChange(BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+    currentFocus.unfocus();
+    FocusScope.of(context).requestFocus(nextFocus);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
           title: Text('Roommate App Login'),
           backgroundColor: Colors.lightGreen,
         ),
-        body: Container(
+        body: SingleChildScrollView(
           child: Form(
               key: _formKey,
               child: Column(
@@ -54,6 +62,11 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: 60),
                   TextFormField(
                     onSaved: (value) => _email = value,
+                    focusNode: _emailFocus,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (term){
+                      _fieldFocusChange(context, _emailFocus, _passwordFocus);
+                    },
                     decoration: InputDecoration(
                       labelText: ("Email"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
@@ -63,6 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   TextFormField(
                     onSaved: (value) => _password = value,
+                    focusNode: _passwordFocus,
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: ("Password"),
