@@ -365,7 +365,7 @@ class _ChorePageState extends State<ChorePage> {
                       timeEditController.text.toString());
                   _showListOfChores();
                 } else {
-                  _showDialog("Error!", "Please fill out all fields");
+                  _showDialog("Error!", "Please fill out all of the fields");
                 }
               }),
           RaisedButton(
