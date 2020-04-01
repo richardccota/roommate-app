@@ -1,3 +1,5 @@
-# roommate_app
+# roommate-app
 
-A new Flutter application.
+Roommate App for CS 4990
+
+By: Richard Cota

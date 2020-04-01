@@ -139,7 +139,6 @@ class _ChorePageState extends State<ChorePage> {
   }
 
   void _addChore(_chore, _who, _date, _time) {
-
     var dateSplit = _date.split(" ");
     var myMonth = dateSplit[1];
     var myDay = dateSplit[2].substring(0, dateSplit[2].length - 1);
@@ -180,8 +179,8 @@ class _ChorePageState extends State<ChorePage> {
     //write a data: key, value
     ref
         .child("House/Ranch/Chores/" +
-        userFName +
-        new DateTime.now().millisecondsSinceEpoch.toString())
+            userFName +
+            new DateTime.now().millisecondsSinceEpoch.toString())
         .set({
       "Chore Name": _chore,
       "Chore Assigned To": _who,
@@ -225,6 +224,15 @@ class _ChorePageState extends State<ChorePage> {
                 });*/
   }
 
+  Widget _todoItem(_name, _chore, _date, _time) {
+    return InkWell(
+      child: Text(_name + _chore + _date + _time),
+        onTap: () {
+          _showDialog("TITLE HERE", "Test");
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -252,9 +260,14 @@ class _ChorePageState extends State<ChorePage> {
               return Container(
                 height: 50,
                 child: Center(
-                    child: Text(
-                        "${studentList[index]['Chore Assigned To']} has to ${studentList[index]['Chore Name']} by ${studentList[index]['Date Due']} at ${studentList[index]['Time Due']}")),
-                //child: Center(child: Text("Hi ${studentList[index]['Chore Assigned To']}, $userFName 's chore is ${studentList[index]['Chore Name']}")),
+                  child: Center(
+                    child: _todoItem(
+                        studentList[index]['Chore Assigned To'],
+                        studentList[index]['Chore Name'],
+                        studentList[index]['Date Due'],
+                        studentList[index]['Time Due']),
+                  ),
+                ),
               );
             },
           )),
@@ -345,7 +358,11 @@ class _ChorePageState extends State<ChorePage> {
                     choreEditController.text.toString() != "" &&
                     dateEditController.text.toString() != "" &&
                     timeEditController.text.toString() != "") {
-                  _addChore(_selectedName, choreEditController.text.toString(), dateEditController.text.toString(), timeEditController.text.toString());
+                  _addChore(
+                      _selectedName,
+                      choreEditController.text.toString(),
+                      dateEditController.text.toString(),
+                      timeEditController.text.toString());
                   _showListOfChores();
                 } else {
                   _showDialog("Error!", "Please fill out all fields");
