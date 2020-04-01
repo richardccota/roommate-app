@@ -8,7 +8,7 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="roommate_app"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/my_ic_launcher">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
