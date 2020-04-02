@@ -345,7 +345,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                     choreEditController.text.toString() != "" &&
                     dateEditController.text.toString() != "" &&
                     timeEditController.text.toString() != "") {
-                  _addChore(_selectedName, choreEditController.text.toString(), dateEditController.text.toString(), timeEditController.text.toString());
+                  _addChore(choreEditController.text.toString(), _selectedName, dateEditController.text.toString(), timeEditController.text.toString());
                   _showListOfChores();
                 } else {
                   _showDialog("Error!", "Please fill out all fields");
