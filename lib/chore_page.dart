@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:roommate_app/login_page.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+import 'package:roommate_app/todo_item.dart';
 
 class ChorePage extends StatefulWidget {
   final FirebaseUser currentUser;
@@ -22,6 +23,11 @@ class _ChorePageState extends State<ChorePage> {
 
   final dFormat = DateFormat.yMMMMEEEEd("en_US");
   final tFormat = DateFormat.jm();
+
+  final snackBar = SnackBar(
+    content: Text("Chore Added!"),
+    duration: const Duration(seconds: 1),
+  );
 
   List<String> _names = [];
   var nameList = [];
@@ -120,8 +126,8 @@ class _ChorePageState extends State<ChorePage> {
       setState(() {
         studentList = tempList;
       });
-      print("LIST: $studentList");
-      print("");
+      //print("LIST: $studentList");
+      //print("");
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
@@ -190,7 +196,7 @@ class _ChorePageState extends State<ChorePage> {
       "Date Due": _date,
       "Time Due": _time,
       "Date Info": myDate.toIso8601String(),
-      "Done": "false"
+      "Done": false
     }).then((res) {
       print("Chore is added ");
     }).catchError((e) {
@@ -235,6 +241,53 @@ class _ChorePageState extends State<ChorePage> {
     ]);
   }*/
 
+  Widget _todoItem(_chore, _name, _date, _time, _done) {
+    bool _isDone = _done;
+    var _myChore = _chore;
+    var _myName = _name;
+    var _myDate = _date;
+    var _myTime = _time;
+
+    void _updateCheck(bool value) {
+      print(_isDone);
+      print(!_isDone);
+      setState(() {
+        _isDone = !_isDone;
+      });
+    }
+
+    return Container(
+        child: Row(
+      children: <Widget>[
+        Expanded(
+            flex: 1,
+            child: Column(
+              children: <Widget>[
+                Checkbox(
+                    value: _isDone,
+                    onChanged: (val) {
+                      setState(() {
+                        _isDone = val;
+                      });
+                    }),
+              ],
+            )),
+        Expanded(
+          flex: 9,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                _name + ": " + _chore + "\n" + _date + ", " + _time,
+                //textAlign: TextAlign.left,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,36 +312,13 @@ class _ChorePageState extends State<ChorePage> {
               child: ListView.builder(
             itemCount: studentList.length,
             itemBuilder: (BuildContext context, int index) {
-              return Container(
-                  child: Row(
-                children: <Widget>[
-                  Expanded(
-                      flex: 1,
-                      child: Column(
-                        children: <Widget>[
-                          Checkbox(value: false, onChanged: null)
-                        ],
-                      )),
-                  Expanded(
-                    flex: 9,
-                    child: Column(
-                      children: <Widget>[
-                        Text(
-                          studentList[index]['Chore Assigned To'] +
-                              ": " +
-                              studentList[index]['Chore Name'] +
-                              "\n" +
-                              studentList[index]['Date Due'] +
-                              ", " +
-                              studentList[index]['Time Due'],
-                          overflow: TextOverflow.visible,
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ));
+              return ToDoItem(
+                isDone: studentList[index]['Done'],
+                myChore: studentList[index]['Chore Name'],
+                myDate: studentList[index]['Date Due'],
+                myName: studentList[index]['Chore Assigned To'],
+                myTime: studentList[index]['Time Due'],
+              );
             },
           )),
           Visibility(
@@ -385,6 +415,7 @@ class _ChorePageState extends State<ChorePage> {
           ),
           Container(
               child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Visibility(
                 visible: _isPicking,
@@ -405,6 +436,7 @@ class _ChorePageState extends State<ChorePage> {
                           _isNotPicking = true;
                           _isPicking = false;
                         });
+                        Scaffold.of(context).showSnackBar(snackBar);
                       } else {
                         _showDialog(
                             "Error!", "Please fill out all of the fields");
@@ -427,7 +459,7 @@ class _ChorePageState extends State<ChorePage> {
           Visibility(
               visible: _isNotPicking,
               child: RaisedButton(
-                child: Text("Add Chore"),
+                child: Text("Add New Chore"),
                 onPressed: () {
                   setState(() {
                     _isNotPicking = false;
