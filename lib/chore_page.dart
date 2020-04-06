@@ -26,7 +26,7 @@ class _ChorePageState extends State<ChorePage> {
 
   final snackBar = SnackBar(
     content: Text("Chore Added!"),
-    duration: const Duration(seconds: 1),
+    duration: const Duration(milliseconds: 1200),
   );
 
   List<String> _names = [];
@@ -42,7 +42,7 @@ class _ChorePageState extends State<ChorePage> {
   var dateEditController = TextEditingController();
   var timeEditController = TextEditingController();
 
-  var studentList = [];
+  var choreList = [];
   DateTime currDate = DateTime.now();
 
   final ref = FirebaseDatabase.instance.reference();
@@ -119,28 +119,30 @@ class _ChorePageState extends State<ChorePage> {
     ref.child("House/Ranch/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
-        tempList.add(v);
+        if (!v['Done'] || v['Date Info'].compareTo(DateTime.now().toString()) == 0) {
+          tempList.add(v);
+        }
       });
       tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
-      studentList.clear();
+      choreList.clear();
       setState(() {
-        studentList = tempList;
+        choreList = tempList;
       });
-      //print("LIST: $studentList");
+      //print("LIST: $choreList");
       //print("");
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
 
     /*print(ds.value);
-                studentList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
-                studentList.clear();
+                choreList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
+                choreList.clear();
                 ds.value.forEach((k,v) {
                   setState(() {
-                    studentList.add(v);
+                    choreList.add(v);
                   });
                 });
-                print("LIST: $studentList");
+                print("LIST: $choreList");
                 print("");
                 }).catchError((e){
                   print("Failed to get user. "+e.toString());
@@ -209,25 +211,25 @@ class _ChorePageState extends State<ChorePage> {
         tempList.add(v);
       });
       tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
-      studentList.clear();
+      choreList.clear();
       setState(() {
-        studentList = tempList;
+        choreList = tempList;
       });
-      //("LIST: $studentList");
+      //("LIST: $choreList");
       //print("");
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
 
     /*print(ds.value);
-                studentList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
-                studentList.clear();
+                choreList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
+                choreList.clear();
                 ds.value.forEach((k,v) {
                   setState(() {
-                    studentList.add(v);
+                    choreList.add(v);
                   });
                 });
-                print("LIST: $studentList");
+                print("LIST: $choreList");
                 print("");
                 }).catchError((e){
                   print("Failed to get user. "+e.toString());
@@ -310,14 +312,14 @@ class _ChorePageState extends State<ChorePage> {
           SizedBox(height: 18.0),
           Expanded(
               child: ListView.builder(
-            itemCount: studentList.length,
+            itemCount: choreList.length,
             itemBuilder: (BuildContext context, int index) {
               return ToDoItem(
-                isDone: studentList[index]['Done'],
-                myChore: studentList[index]['Chore Name'],
-                myDate: studentList[index]['Date Due'],
-                myName: studentList[index]['Chore Assigned To'],
-                myTime: studentList[index]['Time Due'],
+                isDone: choreList[index]['Done'],
+                myChore: choreList[index]['Chore Name'],
+                myDate: choreList[index]['Date Due'],
+                myName: choreList[index]['Chore Assigned To'],
+                myTime: choreList[index]['Time Due'],
               );
             },
           )),
@@ -435,6 +437,10 @@ class _ChorePageState extends State<ChorePage> {
                         setState(() {
                           _isNotPicking = true;
                           _isPicking = false;
+                          _selectedName = null;
+                          choreEditController.text = "";
+                          dateEditController.text = "";
+                          timeEditController.text = "";
                         });
                         Scaffold.of(context).showSnackBar(snackBar);
                       } else {
