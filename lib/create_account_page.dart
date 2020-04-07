@@ -38,9 +38,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _houseFocus = FocusNode();
 
-  String _fName;
-  String _lName;
-  String _house;
+
   String _password;
   String _email;
 
