@@ -36,14 +36,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final FocusNode _lNameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _houseFocus = FocusNode();
 
   String _fName;
   String _lName;
+  String _house;
   String _password;
   String _email;
 
   var fNameEditController = TextEditingController();
   var lNameEditController = TextEditingController();
+  var houseEditController = TextEditingController();
 
   final ref = FirebaseDatabase.instance.reference();
 
@@ -94,11 +97,26 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     focusNode: _lNameFocus,
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (term){
-                      _fieldFocusChange(context, _lNameFocus, _emailFocus);
+                      _fieldFocusChange(context, _lNameFocus, _houseFocus);
                     },
                     decoration: InputDecoration(
                       labelText: ("Last Name"),
                       icon: Icon(Icons.account_box, color: Colors.grey),
+                    ),
+                    validator: (value) =>
+                    value.isEmpty ? 'Can\'t be empty' : null,
+                  ),
+                  TextFormField(
+                    controller: houseEditController,
+                    onSaved: (value) => _house = value.trim(),
+                    focusNode: _houseFocus,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (term){
+                      _fieldFocusChange(context, _houseFocus, _emailFocus);
+                    },
+                    decoration: InputDecoration(
+                      labelText: ("House Name"),
+                      icon: Icon(Icons.home, color: Colors.grey),
                     ),
                     validator: (value) =>
                     value.isEmpty ? 'Can\'t be empty' : null,
@@ -157,10 +175,22 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       }
                       FirebaseUser user = await Provider.of<AuthService>(context).getUser();
                       //write a data: key, value
-                      ref.child("House/Ranch/Users/"+user.uid).set(
+                      ref.child("House/"+houseEditController.text.toString().trim()+"/Users/"+user.uid).set(
                           {
                             "User First Name" : fNameEditController.text.toString().trim(),
-                            "User Last Name" : lNameEditController.text.toString().trim()
+                            "User Last Name" : lNameEditController.text.toString().trim(),
+                            "House" : houseEditController.text.toString().trim()
+                          }
+                      ).then((res) {
+                        print("User is added ");
+                      }).catchError((e) {
+                        print("Failed to add the user. " + e.toString());
+                      });
+                      ref.child("Users/"+user.uid).set(
+                          {
+                            "User First Name" : fNameEditController.text.toString().trim(),
+                            "User Last Name" : lNameEditController.text.toString().trim(),
+                            "House" : houseEditController.text.toString().trim()
                           }
                       ).then((res) {
                         print("User is added ");
