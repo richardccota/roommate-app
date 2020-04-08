@@ -6,26 +6,36 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:roommate_app/login_page.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+import 'package:roommate_app/todo_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ShoppingListPage extends StatefulWidget {
+class ShoppingPage extends StatefulWidget {
   final FirebaseUser currentUser;
 
-  ShoppingListPage(this.currentUser);
+  ShoppingPage(this.currentUser);
 
   @override
-  _ShoppingListPageState createState() => _ShoppingListPageState();
+  _ShoppingPageState createState() => _ShoppingPageState();
 }
 
-class _ShoppingListPageState extends State<ShoppingListPage> {
+class _ShoppingPageState extends State<ShoppingPage> {
   final FocusNode _choreFocus = FocusNode();
   final FocusNode _assignFocus = FocusNode();
 
   final dFormat = DateFormat.yMMMMEEEEd("en_US");
   final tFormat = DateFormat.jm();
 
+  final snackBar = SnackBar(
+    content: Text("Chore Added!"),
+    duration: const Duration(milliseconds: 1200),
+  );
+
   List<String> _names = [];
   var nameList = [];
   String _selectedName;
+
+  var _isPicking = false;
+  var _isNotPicking = true;
 
   var choreEditController = TextEditingController();
   var nameEditController = TextEditingController();
@@ -33,7 +43,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   var dateEditController = TextEditingController();
   var timeEditController = TextEditingController();
 
-  var studentList = [];
+  var choreList = [];
   DateTime currDate = DateTime.now();
 
   final ref = FirebaseDatabase.instance.reference();
@@ -43,19 +53,24 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   String userFName = "";
   String currId = "3";
   String welcomeMessage = "";
+  String houseName = "";
 
   @override
   void initState() {
     super.initState();
-    initUser();
+    //initUser();
     populateUsers();
-    _showListOfChores();
+    //_showListOfChores();
   }
 
   initUser() async {
+    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+    setState(() {
+      houseName = (sharedPrefs.getString('House Name'));
+    });
     user = await _auth.currentUser();
     ref
-        .child("House/Ranch/Users/" + user.uid + "/User First Name")
+        .child("House/" + houseName + "/Users/" + user.uid + "/User First Name")
         .once()
         .then((ds) {
       userFName = ds.value;
@@ -65,6 +80,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
+    _showListOfChores();
   }
 
   void _showDialog(_title, _message) {
@@ -90,13 +106,14 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
     );
   }
 
-  populateUsers() {
-    ref.child("House/Ranch/Users/").once().then((ds) {
+  populateUsers() async {
+    await initUser();
+    ref.child("House/$houseName/Users/").once().then((ds) {
       ds.value.forEach((k, v) {
         _names.add(v['User First Name']);
       });
     }).catchError((e) {
-      print("Failed to get user. " + e.toString());
+      print("Failed to get user4. " + e.toString());
     });
   }
 
@@ -107,31 +124,35 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   }
 
   void _showListOfChores() {
-    ref.child("House/Ranch/Chores/").once().then((ds) {
+    print("NAME: " + houseName);
+    ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
-        tempList.add(v);
+        if (!v['Done'] ||
+            v['Date Info'].compareTo(DateTime.now().toString()) == 0) {
+          tempList.add(v);
+        }
       });
       tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
-      studentList.clear();
+      choreList.clear();
       setState(() {
-        studentList = tempList;
+        choreList = tempList;
       });
-      print("LIST: $studentList");
-      print("");
+      //print("LIST: $choreList");
+      //print("");
     }).catchError((e) {
-      print("Failed to get user. " + e.toString());
+      print("Failed to get user6. " + e.toString());
     });
 
     /*print(ds.value);
-                studentList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
-                studentList.clear();
+                choreList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
+                choreList.clear();
                 ds.value.forEach((k,v) {
                   setState(() {
-                    studentList.add(v);
+                    choreList.add(v);
                   });
                 });
-                print("LIST: $studentList");
+                print("LIST: $choreList");
                 print("");
                 }).catchError((e){
                   print("Failed to get user. "+e.toString());
@@ -139,7 +160,6 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   }
 
   void _addChore(_chore, _who, _date, _time) {
-
     var dateSplit = _date.split(" ");
     var myMonth = dateSplit[1];
     var myDay = dateSplit[2].substring(0, dateSplit[2].length - 1);
@@ -179,7 +199,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
 
     //write a data: key, value
     ref
-        .child("House/Ranch/Chores/" +
+        .child("House/" +
+        houseName +
+        "/Chores/" +
         userFName +
         new DateTime.now().millisecondsSinceEpoch.toString())
         .set({
@@ -188,41 +210,96 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
       "Date Due": _date,
       "Time Due": _time,
       "Date Info": myDate.toIso8601String(),
+      "Done": false
     }).then((res) {
       print("Chore is added ");
     }).catchError((e) {
       print("Failed to add the chore. " + e.toString());
     });
 
-    ref.child("House/Ranch/Chores/").once().then((ds) {
+    ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
         tempList.add(v);
       });
       tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
-      studentList.clear();
+      choreList.clear();
       setState(() {
-        studentList = tempList;
+        choreList = tempList;
       });
-      print("LIST: $studentList");
-      print("");
+      //("LIST: $choreList");
+      //print("");
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
 
     /*print(ds.value);
-                studentList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
-                studentList.clear();
+                choreList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
+                choreList.clear();
                 ds.value.forEach((k,v) {
                   setState(() {
-                    studentList.add(v);
+                    choreList.add(v);
                   });
                 });
-                print("LIST: $studentList");
+                print("LIST: $choreList");
                 print("");
                 }).catchError((e){
                   print("Failed to get user. "+e.toString());
                 });*/
+  }
+
+/*  Widget _todoItem(_name, _chore, _date, _time) {
+    return Row(children: <Widget>[
+      Text(_name ),//+ _chore + _date + _time),
+      CheckboxListTile(value: false, onChanged: null)
+    ]);
+  }*/
+
+  Widget _todoItem(_chore, _name, _date, _time, _done) {
+    bool _isDone = _done;
+    var _myChore = _chore;
+    var _myName = _name;
+    var _myDate = _date;
+    var _myTime = _time;
+
+    void _updateCheck(bool value) {
+      print(_isDone);
+      print(!_isDone);
+      setState(() {
+        _isDone = !_isDone;
+      });
+    }
+
+    return Container(
+        child: Row(
+          children: <Widget>[
+            Expanded(
+                flex: 1,
+                child: Column(
+                  children: <Widget>[
+                    Checkbox(
+                        value: _isDone,
+                        onChanged: (val) {
+                          setState(() {
+                            _isDone = val;
+                          });
+                        }),
+                  ],
+                )),
+            Expanded(
+              flex: 9,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    _name + ": " + _chore + "\n" + _date + ", " + _time,
+                    //textAlign: TextAlign.left,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 
   @override
@@ -232,13 +309,16 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         children: <Widget>[
           SizedBox(height: 25.0),
           Text(
-            'Shopping List',
+            'Chore List',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 20.0),
+          SizedBox(height: 10.0),
           SizedBox(
             //"Welcome ${widget.currentUser.email}",
-            child: Text(welcomeMessage),
+            child: Text(
+                welcomeMessage + "!\n$houseName",
+                textAlign: TextAlign.center
+            ),
 //            style: TextStyle(
 //                fontSize: 18,
 //                fontWeight: FontWeight.bold,
@@ -247,117 +327,174 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
           SizedBox(height: 18.0),
           Expanded(
               child: ListView.builder(
-                itemCount: studentList.length,
+                itemCount: choreList.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    height: 50,
-                    child: Center(
-                        child: Text(
-                            "${studentList[index]['Chore Assigned To']} has to ${studentList[index]['Chore Name']} by ${studentList[index]['Date Due']} at ${studentList[index]['Time Due']}")),
-                    //child: Center(child: Text("Hi ${studentList[index]['Chore Assigned To']}, $userFName 's chore is ${studentList[index]['Chore Name']}")),
+                  return ToDoItem(
+                    isDone: choreList[index]['Done'],
+                    myChore: choreList[index]['Chore Name'],
+                    myDate: choreList[index]['Date Due'],
+                    myName: choreList[index]['Chore Assigned To'],
+                    myTime: choreList[index]['Time Due'],
                   );
                 },
               )),
-          TextFormField(
-            controller: choreEditController,
-            focusNode: _choreFocus,
-            textInputAction: TextInputAction.next,
-            onFieldSubmitted: (term) {
-              _fieldFocusChange(context, _choreFocus, _assignFocus);
-            },
-            decoration: InputDecoration(
-              labelText: ("Chore"),
-              icon: Icon(Icons.room_service, color: Colors.grey),
+          Visibility(
+            visible: _isPicking,
+            child: TextFormField(
+              controller: choreEditController,
+              focusNode: _choreFocus,
+              textInputAction: TextInputAction.next,
+              onFieldSubmitted: (term) {
+                _fieldFocusChange(context, _choreFocus, _assignFocus);
+              },
+              decoration: InputDecoration(
+                labelText: ("Chore"),
+                icon: Icon(Icons.room_service, color: Colors.grey),
+              ),
             ),
           ),
-          Container(
-            child: Row(
-              children: <Widget>[
-                Container(
-                  child: Icon(Icons.person, color: Colors.grey),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 17),
-                    child: ButtonTheme(
-                      alignedDropdown: true,
-                      child: DropdownButton(
-                        icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
-                        hint: Text('Assign Chore To'),
-                        underline: Container(
-                          decoration: const BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(color: Colors.grey))),
+          Visibility(
+            visible: _isPicking,
+            child: Container(
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    child: Icon(Icons.person, color: Colors.grey),
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 17),
+                      child: ButtonTheme(
+                        alignedDropdown: true,
+                        child: DropdownButton(
+                          icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+                          hint: Text('Assign Chore To'),
+                          underline: Container(
+                            decoration: const BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(color: Colors.grey))),
+                          ),
+                          value: _selectedName,
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedName = newValue;
+                            });
+                          },
+                          items: _names.map((name) {
+                            return DropdownMenuItem(
+                              child: Text(name),
+                              value: name,
+                            );
+                          }).toList(),
                         ),
-                        value: _selectedName,
-                        onChanged: (newValue) {
-                          setState(() {
-                            _selectedName = newValue;
-                          });
-                        },
-                        items: _names.map((name) {
-                          return DropdownMenuItem(
-                            child: Text(name),
-                            value: name,
-                          );
-                        }).toList(),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          DateTimeField(
-              controller: dateEditController,
-              decoration: InputDecoration(
-                labelText: ("Date"),
-                icon: Icon(Icons.calendar_today, color: Colors.grey),
-              ),
-              format: dFormat,
-              //get date
-              onShowPicker: (context, currentValue) {
-                return showDatePicker(
+          Visibility(
+            visible: _isPicking,
+            child: DateTimeField(
+                controller: dateEditController,
+                decoration: InputDecoration(
+                  labelText: ("Date"),
+                  icon: Icon(Icons.calendar_today, color: Colors.grey),
+                ),
+                format: dFormat,
+                //get date
+                onShowPicker: (context, currentValue) {
+                  return showDatePicker(
+                      context: context,
+                      initialDate: currDate,
+                      firstDate: currDate,
+                      lastDate: DateTime(2022));
+                }),
+          ),
+          Visibility(
+            visible: _isPicking,
+            child: DateTimeField(
+                controller: timeEditController,
+                decoration: InputDecoration(
+                  labelText: ("Time"),
+                  icon: Icon(Icons.access_time, color: Colors.grey),
+                ),
+                format: tFormat,
+                onShowPicker: (context, currentValue) async {
+                  final time = await showTimePicker(
                     context: context,
-                    initialDate: currDate,
-                    firstDate: currDate,
-                    lastDate: DateTime(2022));
-              }),
-          DateTimeField(
-              controller: timeEditController,
-              decoration: InputDecoration(
-                labelText: ("Time"),
-                icon: Icon(Icons.access_time, color: Colors.grey),
-              ),
-              format: tFormat,
-              onShowPicker: (context, currentValue) async {
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime:
-                  TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
-                );
-                return DateTimeField.convert(time);
-              }),
-          RaisedButton(
-              child: Text("Add Chore"),
-              onPressed: () {
-                if (_selectedName != null &&
-                    choreEditController.text.toString() != "" &&
-                    dateEditController.text.toString() != "" &&
-                    timeEditController.text.toString() != "") {
-                  _addChore(choreEditController.text.toString(), _selectedName, dateEditController.text.toString(), timeEditController.text.toString());
-                  _showListOfChores();
-                } else {
-                  _showDialog("Error!", "Please fill out all fields");
-                }
-              }),
-          RaisedButton(
+                    initialTime:
+                    TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
+                  );
+                  return DateTimeField.convert(time);
+                }),
+          ),
+          Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Visibility(
+                    visible: _isPicking,
+                    child: RaisedButton(
+                        child: Text("Add Chore"),
+                        onPressed: () {
+                          if (_selectedName != null &&
+                              choreEditController.text.toString() != "" &&
+                              dateEditController.text.toString() != "" &&
+                              timeEditController.text.toString() != "") {
+                            _addChore(
+                                choreEditController.text.toString(),
+                                _selectedName,
+                                dateEditController.text.toString(),
+                                timeEditController.text.toString());
+                            _showListOfChores();
+                            setState(() {
+                              _isNotPicking = true;
+                              _isPicking = false;
+                              _selectedName = null;
+                              choreEditController.text = "";
+                              dateEditController.text = "";
+                              timeEditController.text = "";
+                            });
+                            Scaffold.of(context).showSnackBar(snackBar);
+                          } else {
+                            _showDialog(
+                                "Error!", "Please fill out all of the fields");
+                          }
+                        }),
+                  ),
+                  Visibility(
+                      visible: _isPicking,
+                      child: RaisedButton(
+                        child: Text("Cancel"),
+                        onPressed: () {
+                          setState(() {
+                            _isNotPicking = true;
+                            _isPicking = false;
+                          });
+                        },
+                      )),
+                ],
+              )),
+          Visibility(
+              visible: _isNotPicking,
+              child: RaisedButton(
+                child: Text("Add New Chore"),
+                onPressed: () {
+                  setState(() {
+                    _isNotPicking = false;
+                    _isPicking = true;
+                  });
+                },
+              ))
+          /*RaisedButton(
               child: Text("LOGOUT"),
               onPressed: () async {
                 await Provider.of<AuthService>(context).logout();
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => LoginPage()));
-              }),
+              }),*/
         ],
       ),
     );

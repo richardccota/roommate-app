@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:roommate_app/home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class CreateAccountPage extends StatefulWidget {
@@ -38,7 +39,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _houseFocus = FocusNode();
 
-
+  String _fName;
+  String _lName;
+  String _house;
   String _password;
   String _email;
 
@@ -66,7 +69,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         body: SingleChildScrollView(
           child: Form(
               key: _formKey,
-
               child: Column(
                 children: <Widget>[
                   SizedBox(
@@ -195,6 +197,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       }).catchError((e) {
                         print("Failed to add the user. " + e.toString());
                       });
+
+                    SharedPreferences myPrefs = await SharedPreferences.getInstance();
+                    myPrefs.setString('House Name', houseEditController.text.toString().trim());
+
                       Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => HomePage(user))

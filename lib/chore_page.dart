@@ -7,6 +7,7 @@ import 'package:roommate_app/login_page.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:roommate_app/todo_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChorePage extends StatefulWidget {
   final FirebaseUser currentUser;
@@ -52,19 +53,24 @@ class _ChorePageState extends State<ChorePage> {
   String userFName = "";
   String currId = "3";
   String welcomeMessage = "";
+  String houseName = "";
 
   @override
   void initState() {
     super.initState();
-    initUser();
+    //initUser();
     populateUsers();
-    _showListOfChores();
+    //_showListOfChores();
   }
 
   initUser() async {
+    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+    setState(() {
+      houseName = (sharedPrefs.getString('House Name'));
+    });
     user = await _auth.currentUser();
     ref
-        .child("House/Ranch/Users/" + user.uid + "/User First Name")
+        .child("House/" + houseName + "/Users/" + user.uid + "/User First Name")
         .once()
         .then((ds) {
       userFName = ds.value;
@@ -74,6 +80,7 @@ class _ChorePageState extends State<ChorePage> {
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
+    _showListOfChores();
   }
 
   void _showDialog(_title, _message) {
@@ -99,13 +106,14 @@ class _ChorePageState extends State<ChorePage> {
     );
   }
 
-  populateUsers() {
-    ref.child("House/Ranch/Users/").once().then((ds) {
+  populateUsers() async {
+    await initUser();
+    ref.child("House/$houseName/Users/").once().then((ds) {
       ds.value.forEach((k, v) {
         _names.add(v['User First Name']);
       });
     }).catchError((e) {
-      print("Failed to get user. " + e.toString());
+      print("Failed to get user4. " + e.toString());
     });
   }
 
@@ -116,10 +124,12 @@ class _ChorePageState extends State<ChorePage> {
   }
 
   void _showListOfChores() {
-    ref.child("House/Ranch/Chores/").once().then((ds) {
+    print("NAME: " + houseName);
+    ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
-        if (!v['Done'] || v['Date Info'].compareTo(DateTime.now().toString()) == 0) {
+        if (!v['Done'] ||
+            v['Date Info'].compareTo(DateTime.now().toString()) == 0) {
           tempList.add(v);
         }
       });
@@ -131,7 +141,7 @@ class _ChorePageState extends State<ChorePage> {
       //print("LIST: $choreList");
       //print("");
     }).catchError((e) {
-      print("Failed to get user. " + e.toString());
+      print("Failed to get user6. " + e.toString());
     });
 
     /*print(ds.value);
@@ -189,7 +199,9 @@ class _ChorePageState extends State<ChorePage> {
 
     //write a data: key, value
     ref
-        .child("House/Ranch/Chores/" +
+        .child("House/" +
+            houseName +
+            "/Chores/" +
             userFName +
             new DateTime.now().millisecondsSinceEpoch.toString())
         .set({
@@ -205,7 +217,7 @@ class _ChorePageState extends State<ChorePage> {
       print("Failed to add the chore. " + e.toString());
     });
 
-    ref.child("House/Ranch/Chores/").once().then((ds) {
+    ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
         tempList.add(v);
@@ -300,10 +312,13 @@ class _ChorePageState extends State<ChorePage> {
             'Chore List',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 20.0),
+          SizedBox(height: 10.0),
           SizedBox(
             //"Welcome ${widget.currentUser.email}",
-            child: Text(welcomeMessage),
+            child: Text(
+              welcomeMessage + "!\n$houseName",
+              textAlign: TextAlign.center
+            ),
 //            style: TextStyle(
 //                fontSize: 18,
 //                fontWeight: FontWeight.bold,

@@ -181,8 +181,8 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.account_box),
           ),
           BottomNavigationBarItem(
-            title: Text("Other"),
-            icon: Icon(Icons.email),
+            title: Text("Settings"),
+            icon: Icon(Icons.settings),
           ),
         ],
         currentIndex: _selectedIndex,

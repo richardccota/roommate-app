@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
 import 'package:roommate_app/chore_page.dart';
 import 'package:roommate_app/home_page.dart';
+import 'package:roommate_app/settings_page.dart';
 import 'package:roommate_app/shopping_list_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -28,9 +29,9 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   List<Widget> _widgetOptions = [
-    ShoppingListPage(_currentUser),
+    ShoppingPage(_currentUser),
     ChorePage(_currentUser),
-    Text("Screen 3"),
+    SettingsPage()
   ];
 
   void _onTapBottomNavBar(index) {
@@ -54,8 +55,8 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.account_box),
           ),
           BottomNavigationBarItem(
-            title: Text("Other"),
-            icon: Icon(Icons.email),
+            title: Text("Settings"),
+            icon: Icon(Icons.settings),
           ),
         ],
         currentIndex: _selectedIndex,
