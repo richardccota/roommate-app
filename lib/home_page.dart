@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:roommate_app/authenticator.dart';
 import 'package:roommate_app/chore_page.dart';
-import 'package:roommate_app/home_page.dart';
 import 'package:roommate_app/settings_page.dart';
 import 'package:roommate_app/shopping_list_page.dart';
 

@@ -1,10 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:roommate_app/authenticator.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:roommate_app/login_page.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:roommate_app/todo_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';

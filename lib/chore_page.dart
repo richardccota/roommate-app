@@ -124,7 +124,7 @@ class _ChorePageState extends State<ChorePage> {
   }
 
   void _showListOfChores() {
-    print("MNAME: "+houseName);
+    print("MNAME: " + houseName);
     ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
@@ -315,30 +315,30 @@ class _ChorePageState extends State<ChorePage> {
           SizedBox(height: 10.0),
           SizedBox(
             //"Welcome ${widget.currentUser.email}",
-            child: Text(
-              welcomeMessage + "!\n$houseName",
-              textAlign: TextAlign.center
-            ),
+            child: Text(welcomeMessage + "!\n$houseName",
+                textAlign: TextAlign.center),
 //            style: TextStyle(
 //                fontSize: 18,
 //                fontWeight: FontWeight.bold,
 //                fontStyle: FontStyle.italic),
           ),
           SizedBox(height: 18.0),
-          Expanded(
-              child: ListView.builder(
-            itemCount: choreList.length,
-            itemBuilder: (BuildContext context, int index) {
-              return ToDoItem(
-                isDone: choreList[index]['Done'],
-                myChore: choreList[index]['Chore Name'],
-                myDate: choreList[index]['Date Due'],
-                myName: choreList[index]['Chore Assigned To'],
-                myTime: choreList[index]['Time Due'],
-                myHouse: houseName
-              );
-            },
-          )),
+          Visibility(
+            visible: _isNotPicking,
+            child: Expanded(
+                child: ListView.builder(
+              itemCount: choreList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ToDoItem(
+                    isDone: choreList[index]['Done'],
+                    myChore: choreList[index]['Chore Name'],
+                    myDate: choreList[index]['Date Due'],
+                    myName: choreList[index]['Chore Assigned To'],
+                    myTime: choreList[index]['Time Due'],
+                    myHouse: houseName);
+              },
+            )),
+          ),
           Visibility(
             visible: _isPicking,
             child: TextFormField(
@@ -470,6 +470,7 @@ class _ChorePageState extends State<ChorePage> {
                   child: RaisedButton(
                     child: Text("Cancel"),
                     onPressed: () {
+                      _showListOfChores();
                       setState(() {
                         _isNotPicking = true;
                         _isPicking = false;

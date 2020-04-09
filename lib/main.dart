@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:roommate_app/create_account_page.dart';
 import 'package:roommate_app/login_page.dart';
 import 'package:roommate_app/home_page.dart';
 import 'package:roommate_app/authenticator.dart';
@@ -25,7 +24,6 @@ class MyApp extends StatelessWidget {
       home: FutureBuilder<FirebaseUser>(
         future: Provider.of<AuthService>(context).getUser(),
         builder: (context, AsyncSnapshot<FirebaseUser> snapshot) {
-          //          ⇐ NEW
           if (snapshot.connectionState == ConnectionState.done) {
             // log error to console
             if (snapshot.error != null) {
