@@ -124,7 +124,7 @@ class _ChorePageState extends State<ChorePage> {
   }
 
   void _showListOfChores() {
-    print("NAME: " + houseName);
+    print("MNAME: "+houseName);
     ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
@@ -335,6 +335,7 @@ class _ChorePageState extends State<ChorePage> {
                 myDate: choreList[index]['Date Due'],
                 myName: choreList[index]['Chore Assigned To'],
                 myTime: choreList[index]['Time Due'],
+                myHouse: houseName
               );
             },
           )),

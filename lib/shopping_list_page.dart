@@ -60,7 +60,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
     super.initState();
     //initUser();
     populateUsers();
-    //_showListOfChores();
+    //_showListOfItems();
   }
 
   initUser() async {
@@ -80,7 +80,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
-    _showListOfChores();
+    _showListOfItems();
   }
 
   void _showDialog(_title, _message) {
@@ -123,25 +123,20 @@ class _ShoppingPageState extends State<ShoppingPage> {
     FocusScope.of(context).requestFocus(nextFocus);
   }
 
-  void _showListOfChores() {
+  void _showListOfItems() {
     print("NAME: " + houseName);
-    ref.child("House/" + houseName + "/Chores/").once().then((ds) {
+    ref.child("House/" + houseName + "/Items/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
-        if (!v['Done'] ||
-            v['Date Info'].compareTo(DateTime.now().toString()) == 0) {
+        if(!v['Done'])
           tempList.add(v);
-        }
       });
-      tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
       choreList.clear();
       setState(() {
         choreList = tempList;
       });
-      //print("LIST: $choreList");
-      //print("");
     }).catchError((e) {
-      print("Failed to get user6. " + e.toString());
+      print("Failed to get user8. " + e.toString());
     });
 
     /*print(ds.value);
@@ -159,57 +154,17 @@ class _ShoppingPageState extends State<ShoppingPage> {
                 });*/
   }
 
-  void _addChore(_chore, _who, _date, _time) {
-    var dateSplit = _date.split(" ");
-    var myMonth = dateSplit[1];
-    var myDay = dateSplit[2].substring(0, dateSplit[2].length - 1);
-    var myYear = dateSplit[3];
-    var myMonthNum = 0;
-
-    var timeSplit = _time.split(":");
-    var myHour = int.parse(timeSplit[0]);
-    var myMinute = timeSplit[1].substring(0, 2);
-    var myAMPM = timeSplit[1].substring(3);
-
-    if (myAMPM == "PM") myHour += 12;
-
-    var monthList = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    ];
-    for (var i = 0; i < 12; i++) {
-      if (monthList[i] == myMonth) myMonthNum = i + 1;
-    }
-
-    var myDate = new DateTime(int.parse(myYear), myMonthNum, int.parse(myDay),
-        myHour, int.parse(myMinute));
-    print(myDate);
-
-    //print(userFName);
+  void _addItem(_item) {
 
     //write a data: key, value
     ref
         .child("House/" +
         houseName +
-        "/Chores/" +
+        "/Items/" +
         userFName +
         new DateTime.now().millisecondsSinceEpoch.toString())
         .set({
-      "Chore Name": _chore,
-      "Chore Assigned To": _who,
-      "Date Due": _date,
-      "Time Due": _time,
-      "Date Info": myDate.toIso8601String(),
+      "Item Name": _item,
       "Done": false
     }).then((res) {
       print("Chore is added ");
@@ -217,12 +172,11 @@ class _ShoppingPageState extends State<ShoppingPage> {
       print("Failed to add the chore. " + e.toString());
     });
 
-    ref.child("House/" + houseName + "/Chores/").once().then((ds) {
+    ref.child("House/" + houseName + "/Items/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
         tempList.add(v);
       });
-      tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
       choreList.clear();
       setState(() {
         choreList = tempList;
@@ -233,74 +187,10 @@ class _ShoppingPageState extends State<ShoppingPage> {
       print("Failed to get user. " + e.toString());
     });
 
-    /*print(ds.value);
-                choreList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
-                choreList.clear();
-                ds.value.forEach((k,v) {
-                  setState(() {
-                    choreList.add(v);
-                  });
-                });
-                print("LIST: $choreList");
-                print("");
-                }).catchError((e){
-                  print("Failed to get user. "+e.toString());
-                });*/
   }
 
-/*  Widget _todoItem(_name, _chore, _date, _time) {
-    return Row(children: <Widget>[
-      Text(_name ),//+ _chore + _date + _time),
-      CheckboxListTile(value: false, onChanged: null)
-    ]);
-  }*/
 
-  Widget _todoItem(_chore, _name, _date, _time, _done) {
-    bool _isDone = _done;
-    var _myChore = _chore;
-    var _myName = _name;
-    var _myDate = _date;
-    var _myTime = _time;
 
-    void _updateCheck(bool value) {
-      print(_isDone);
-      print(!_isDone);
-      setState(() {
-        _isDone = !_isDone;
-      });
-    }
-
-    return Container(
-        child: Row(
-          children: <Widget>[
-            Expanded(
-                flex: 1,
-                child: Column(
-                  children: <Widget>[
-                    Checkbox(
-                        value: _isDone,
-                        onChanged: (val) {
-                          setState(() {
-                            _isDone = val;
-                          });
-                        }),
-                  ],
-                )),
-            Expanded(
-              flex: 9,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    _name + ": " + _chore + "\n" + _date + ", " + _time,
-                    //textAlign: TextAlign.left,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +199,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
         children: <Widget>[
           SizedBox(height: 25.0),
           Text(
-            'Chore List',
+            'Shopping List',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10.0),
@@ -329,12 +219,10 @@ class _ShoppingPageState extends State<ShoppingPage> {
               child: ListView.builder(
                 itemCount: choreList.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return ToDoItem(
+                  return ShoppingItem(
                     isDone: choreList[index]['Done'],
-                    myChore: choreList[index]['Chore Name'],
-                    myDate: choreList[index]['Date Due'],
-                    myName: choreList[index]['Chore Assigned To'],
-                    myTime: choreList[index]['Time Due'],
+                    myItem: choreList[index]['Item Name'],
+                    myHouse: houseName
                   );
                 },
               )),
@@ -348,87 +236,10 @@ class _ShoppingPageState extends State<ShoppingPage> {
                 _fieldFocusChange(context, _choreFocus, _assignFocus);
               },
               decoration: InputDecoration(
-                labelText: ("Chore"),
-                icon: Icon(Icons.room_service, color: Colors.grey),
+                labelText: ("Item"),
+                icon: Icon(Icons.shopping_basket, color: Colors.grey),
               ),
             ),
-          ),
-          Visibility(
-            visible: _isPicking,
-            child: Container(
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    child: Icon(Icons.person, color: Colors.grey),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(left: 17),
-                      child: ButtonTheme(
-                        alignedDropdown: true,
-                        child: DropdownButton(
-                          icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
-                          hint: Text('Assign Chore To'),
-                          underline: Container(
-                            decoration: const BoxDecoration(
-                                border: Border(
-                                    bottom: BorderSide(color: Colors.grey))),
-                          ),
-                          value: _selectedName,
-                          onChanged: (newValue) {
-                            setState(() {
-                              _selectedName = newValue;
-                            });
-                          },
-                          items: _names.map((name) {
-                            return DropdownMenuItem(
-                              child: Text(name),
-                              value: name,
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Visibility(
-            visible: _isPicking,
-            child: DateTimeField(
-                controller: dateEditController,
-                decoration: InputDecoration(
-                  labelText: ("Date"),
-                  icon: Icon(Icons.calendar_today, color: Colors.grey),
-                ),
-                format: dFormat,
-                //get date
-                onShowPicker: (context, currentValue) {
-                  return showDatePicker(
-                      context: context,
-                      initialDate: currDate,
-                      firstDate: currDate,
-                      lastDate: DateTime(2022));
-                }),
-          ),
-          Visibility(
-            visible: _isPicking,
-            child: DateTimeField(
-                controller: timeEditController,
-                decoration: InputDecoration(
-                  labelText: ("Time"),
-                  icon: Icon(Icons.access_time, color: Colors.grey),
-                ),
-                format: tFormat,
-                onShowPicker: (context, currentValue) async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime:
-                    TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
-                  );
-                  return DateTimeField.convert(time);
-                }),
           ),
           Container(
               child: Row(
@@ -437,25 +248,17 @@ class _ShoppingPageState extends State<ShoppingPage> {
                   Visibility(
                     visible: _isPicking,
                     child: RaisedButton(
-                        child: Text("Add Chore"),
+                        child: Text("Add Item"),
                         onPressed: () {
-                          if (_selectedName != null &&
-                              choreEditController.text.toString() != "" &&
-                              dateEditController.text.toString() != "" &&
-                              timeEditController.text.toString() != "") {
-                            _addChore(
-                                choreEditController.text.toString(),
-                                _selectedName,
-                                dateEditController.text.toString(),
-                                timeEditController.text.toString());
-                            _showListOfChores();
+                          if (
+                              choreEditController.text.toString() != "") {
+                            _addItem(
+                                choreEditController.text.toString());
+                            _showListOfItems();
                             setState(() {
                               _isNotPicking = true;
                               _isPicking = false;
-                              _selectedName = null;
                               choreEditController.text = "";
-                              dateEditController.text = "";
-                              timeEditController.text = "";
                             });
                             Scaffold.of(context).showSnackBar(snackBar);
                           } else {
@@ -480,7 +283,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
           Visibility(
               visible: _isNotPicking,
               child: RaisedButton(
-                child: Text("Add New Chore"),
+                child: Text("Add New Item"),
                 onPressed: () {
                   setState(() {
                     _isNotPicking = false;

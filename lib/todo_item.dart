@@ -7,6 +7,7 @@ class ToDoItem extends StatefulWidget {
   String myName;
   String myDate;
   String myTime;
+  String myHouse;
 
   ToDoItem(
       {Key key,
@@ -14,11 +15,23 @@ class ToDoItem extends StatefulWidget {
       this.myChore,
       this.myName,
       this.myDate,
-      this.myTime})
+      this.myTime,
+      this.myHouse})
       : super(key: key);
 
   @override
   _ToDoItemState createState() => _ToDoItemState();
+}
+
+class ShoppingItem extends StatefulWidget {
+  bool isDone;
+  String myItem;
+  String myHouse;
+
+  ShoppingItem({Key key, this.isDone, this.myItem, this.myHouse}) : super(key: key);
+
+  @override
+  _ShoppingItemState createState() => _ShoppingItemState();
 }
 
 class _ToDoItemState extends State<ToDoItem> {
@@ -26,18 +39,16 @@ class _ToDoItemState extends State<ToDoItem> {
   final ref2 = FirebaseDatabase.instance.reference();
   var choreList = [];
 
-
   void _updateStatus(chore, date, name, time, done) {
-    ref.child("House/Ranch/Chores/").once().then((ds) {
-      var tempList = [];
+    ref.child("House/${widget.myHouse}/Chores/").once().then((ds) {
       ds.value.forEach((k, v) {
         if (v['Chore Name'] == chore &&
             v['Date Due'] == date &&
             v['Chore Assigned To'] == name &&
             v['Time Due'] == time) {
-          ref2.child("House/Ranch/Chores/" + k).update({
-            "Done": done
-          }).then((res) {
+          ref2
+              .child("House/${widget.myHouse}/Chores/" + k)
+              .update({"Done": done}).then((res) {
             print("Chore is updated ");
           }).catchError((e) {
             print("Failed to update the chore. " + e.toString());
@@ -76,6 +87,66 @@ class _ToDoItemState extends State<ToDoItem> {
             children: <Widget>[
               Text(
                   "${widget.myName}: ${widget.myChore} \n${widget.myDate}, ${widget.myTime}"),
+            ],
+          ),
+        ),
+      ],
+    ));
+  }
+}
+
+class _ShoppingItemState extends State<ShoppingItem> {
+  final ref = FirebaseDatabase.instance.reference();
+  final ref2 = FirebaseDatabase.instance.reference();
+  var choreList = [];
+
+  void _updateStatus(item, done) {
+    print("Running _updateStatus");
+    print(widget.myHouse);
+    ref.child("House/${widget.myHouse}/Items/").once().then((ds) {
+      ds.value.forEach((k, v) {
+        if (
+            v['Item Name'] == item) {
+          ref2
+              .child("House/${widget.myHouse}/Items/" + k)
+              .update({"Done": done}).then((res) {
+            print("Item is updated ");
+          }).catchError((e) {
+            print("Failed to update the item. " + e.toString());
+          });
+        }
+      });
+    }).catchError((e) {
+      print("Failed to get user. " + e.toString());
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: Row(
+      children: <Widget>[
+        Expanded(
+            flex: 1,
+            child: Column(
+              children: <Widget>[
+                Checkbox(
+                    value: widget.isDone,
+                    onChanged: (val) {
+                      _updateStatus(widget.myItem, val);
+                      setState(() {
+                        widget.isDone = val;
+                      });
+                    }),
+              ],
+            )),
+        Expanded(
+          flex: 9,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                  "${widget.myItem}"),
             ],
           ),
         ),

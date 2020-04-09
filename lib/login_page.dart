@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(
                     height: 100
                   ),
-                  Text("Please login to your Account"),
+                  Text("Please Login or Create a New Account"),
                   SizedBox(height: 60),
                   TextFormField(
                     onSaved: (value) => _email = value,
