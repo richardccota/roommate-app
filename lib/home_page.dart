@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> _widgetOptions = [
     ShoppingPage(_currentUser),
     ChorePage(_currentUser),
-    SettingsPage()
+    SettingsPage(_currentUser)
   ];
 
   void _onTapBottomNavBar(index) {

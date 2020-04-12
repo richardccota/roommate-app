@@ -1,8 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:roommate_app/authenticator.dart';
 
 class SettingsPage extends StatefulWidget {
+  final FirebaseUser currentUser;
+
+  SettingsPage(this.currentUser);
+
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
@@ -77,6 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         child: Text("LOGOUT"),
                         onPressed: () async {
                           await Provider.of<AuthService>(context).logout();
+                          Navigator.popUntil(context, ModalRoute.withName("/"));
                         }),
                   ),
                 ],

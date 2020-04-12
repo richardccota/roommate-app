@@ -162,7 +162,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           AuthResult result =
                           await Provider.of<AuthService>(context)
                               .signUp(email: _email.trim(), password: _password);
-                          print(result);
+                          print("PRINTING: "+ result.toString());
 
                         } on AuthException catch (error) {
                           // handle the firebase specific error
@@ -201,10 +201,16 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     SharedPreferences myPrefs = await SharedPreferences.getInstance();
                     myPrefs.setString('House Name', houseEditController.text.toString().trim());
 
+/*                      AuthResult result =
+                      await Provider.of<AuthService>(context).loginUser(
+                          email: _email, password: _password);
+                      print(result);*/
+
                       Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => HomePage(user))
                       );
+
                     },
                   ),
                 ],
