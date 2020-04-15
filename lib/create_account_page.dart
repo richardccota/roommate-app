@@ -6,7 +6,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:roommate_app/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class CreateAccountPage extends StatefulWidget {
   @override
   _CreateAccountPageState createState() => _CreateAccountPageState();
@@ -37,12 +36,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final FocusNode _lNameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _password2Focus = FocusNode();
   final FocusNode _houseFocus = FocusNode();
 
   String _fName;
   String _lName;
   String _house;
   String _password;
+  String _password2;
   String _email;
 
   var fNameEditController = TextEditingController();
@@ -51,11 +52,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
   final ref = FirebaseDatabase.instance.reference();
 
-  _fieldFocusChange(BuildContext context, FocusNode currentFocus,FocusNode nextFocus) {
+  _fieldFocusChange(
+      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
     currentFocus.unfocus();
     FocusScope.of(context).requestFocus(nextFocus);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,9 +72,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               key: _formKey,
               child: Column(
                 children: <Widget>[
-                  SizedBox(
-                      height: 100
-                  ),
+                  SizedBox(height: 100),
                   Text("Please enter your information"),
                   //SizedBox(height: 60),
                   TextFormField(
@@ -81,7 +80,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     onSaved: (value) => _fName = value.trim(),
                     focusNode: _fNameFocus,
                     textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (term){
+                    onFieldSubmitted: (term) {
                       _fieldFocusChange(context, _fNameFocus, _lNameFocus);
                     },
                     decoration: InputDecoration(
@@ -89,14 +88,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       icon: Icon(Icons.account_box, color: Colors.grey),
                     ),
                     validator: (value) =>
-                    value.isEmpty ? 'Can\'t be empty' : null,
+                        value.isEmpty ? 'Can\'t be empty' : null,
                   ),
                   TextFormField(
                     controller: lNameEditController,
                     onSaved: (value) => _lName = value.trim(),
                     focusNode: _lNameFocus,
                     textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (term){
+                    onFieldSubmitted: (term) {
                       _fieldFocusChange(context, _lNameFocus, _houseFocus);
                     },
                     decoration: InputDecoration(
@@ -104,14 +103,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       icon: Icon(Icons.account_box, color: Colors.grey),
                     ),
                     validator: (value) =>
-                    value.isEmpty ? 'Can\'t be empty' : null,
+                        value.isEmpty ? 'Can\'t be empty' : null,
                   ),
                   TextFormField(
                     controller: houseEditController,
                     onSaved: (value) => _house = value.trim(),
                     focusNode: _houseFocus,
                     textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (term){
+                    onFieldSubmitted: (term) {
                       _fieldFocusChange(context, _houseFocus, _emailFocus);
                     },
                     decoration: InputDecoration(
@@ -119,13 +118,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       icon: Icon(Icons.home, color: Colors.grey),
                     ),
                     validator: (value) =>
-                    value.isEmpty ? 'Can\'t be empty' : null,
+                        value.isEmpty ? 'Can\'t be empty' : null,
                   ),
                   TextFormField(
                     onSaved: (value) => _email = value.trim(),
                     focusNode: _emailFocus,
                     textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (term){
+                    onFieldSubmitted: (term) {
                       _fieldFocusChange(context, _emailFocus, _passwordFocus);
                     },
                     decoration: InputDecoration(
@@ -133,18 +132,34 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       icon: Icon(Icons.account_box, color: Colors.grey),
                     ),
                     validator: (value) =>
-                    value.isEmpty ? 'Can\'t be empty' : null,
+                        value.isEmpty ? 'Can\'t be empty' : null,
                   ),
                   TextFormField(
                     onSaved: (value) => _password = value,
                     focusNode: _passwordFocus,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (term) {
+                      _fieldFocusChange(
+                          context, _passwordFocus, _password2Focus);
+                    },
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: ("Password"),
                       icon: Icon(Icons.lock, color: Colors.grey),
                     ),
                     validator: (value) =>
-                    value.isEmpty ? 'Cannot be empty' : null,
+                        value.isEmpty ? 'Cannot be empty' : null,
+                  ),
+                  TextFormField(
+                    onSaved: (value) => _password2 = value,
+                    focusNode: _password2Focus,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: ("Confirm Password"),
+                      icon: Icon(Icons.lock, color: Colors.grey),
+                    ),
+                    validator: (value) =>
+                        value.isEmpty ? 'Cannot be empty' : null,
                   ),
                   SizedBox(height: 30),
                   SizedBox(height: 10),
@@ -157,60 +172,70 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       form.save();
 
                       // Validate will return true if is valid, or false if invalid.
-                      if (form.validate()) {
-                        try {
-                          AuthResult result =
-                          await Provider.of<AuthService>(context)
-                              .signUp(email: _email.trim(), password: _password);
-                          print("PRINTING: "+ result.toString());
-
-                        } on AuthException catch (error) {
-                          // handle the firebase specific error
-                          return _buildErrorDialog(context, error.message);
-                        } on Exception catch (error) {
-                          // gracefully handle anything else that might happen..
-                          return _buildErrorDialog(context, error.toString());
+                      if (_password != _password2) {
+                        return _buildErrorDialog(
+                            context, "Passwords do not match");
+                      } else {
+                        if (form.validate()) {
+                          try {
+                            AuthResult result =
+                                await Provider.of<AuthService>(context).signUp(
+                                    email: _email.trim(), password: _password);
+                            print("PRINTING: " + result.toString());
+                          } on AuthException catch (error) {
+                            // handle the firebase specific error
+                            return _buildErrorDialog(context, error.message);
+                          } on Exception catch (error) {
+                            // gracefully handle anything else that might happen..
+                            return _buildErrorDialog(context, error.toString());
+                          }
                         }
+                        FirebaseUser user =
+                            await Provider.of<AuthService>(context).getUser();
+                        //write a data: key, value
+                        ref
+                            .child("House/" +
+                                houseEditController.text.toString().trim() +
+                                "/Users/" +
+                                user.uid)
+                            .set({
+                          "User First Name":
+                              fNameEditController.text.toString().trim(),
+                          "User Last Name":
+                              lNameEditController.text.toString().trim(),
+                          "House": houseEditController.text.toString().trim()
+                        }).then((res) {
+                          print("User is added ");
+                        }).catchError((e) {
+                          print("Failed to add the user. " + e.toString());
+                        });
+                        ref.child("Users/" + user.uid).set({
+                          "User First Name":
+                              fNameEditController.text.toString().trim(),
+                          "User Last Name":
+                              lNameEditController.text.toString().trim(),
+                          "House": houseEditController.text.toString().trim()
+                        }).then((res) {
+                          print("User is added ");
+                        }).catchError((e) {
+                          print("Failed to add the user. " + e.toString());
+                        });
 
+                        SharedPreferences myPrefs =
+                            await SharedPreferences.getInstance();
+                        myPrefs.setString('House Name',
+                            houseEditController.text.toString().trim());
+
+                        /*                      AuthResult result =
+                        await Provider.of<AuthService>(context).loginUser(
+                            email: _email, password: _password);
+                        print(result);*/
+
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => HomePage(user)));
                       }
-                      FirebaseUser user = await Provider.of<AuthService>(context).getUser();
-                      //write a data: key, value
-                      ref.child("House/"+houseEditController.text.toString().trim()+"/Users/"+user.uid).set(
-                          {
-                            "User First Name" : fNameEditController.text.toString().trim(),
-                            "User Last Name" : lNameEditController.text.toString().trim(),
-                            "House" : houseEditController.text.toString().trim()
-                          }
-                      ).then((res) {
-                        print("User is added ");
-                      }).catchError((e) {
-                        print("Failed to add the user. " + e.toString());
-                      });
-                      ref.child("Users/"+user.uid).set(
-                          {
-                            "User First Name" : fNameEditController.text.toString().trim(),
-                            "User Last Name" : lNameEditController.text.toString().trim(),
-                            "House" : houseEditController.text.toString().trim()
-                          }
-                      ).then((res) {
-                        print("User is added ");
-                      }).catchError((e) {
-                        print("Failed to add the user. " + e.toString());
-                      });
-
-                    SharedPreferences myPrefs = await SharedPreferences.getInstance();
-                    myPrefs.setString('House Name', houseEditController.text.toString().trim());
-
-/*                      AuthResult result =
-                      await Provider.of<AuthService>(context).loginUser(
-                          email: _email, password: _password);
-                      print(result);*/
-
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomePage(user))
-                      );
-
                     },
                   ),
                 ],

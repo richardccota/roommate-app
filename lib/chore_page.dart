@@ -8,6 +8,7 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:roommate_app/todo_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class ChorePage extends StatefulWidget {
   final FirebaseUser currentUser;
@@ -21,6 +22,8 @@ class ChorePage extends StatefulWidget {
 class _ChorePageState extends State<ChorePage> {
   final FocusNode _choreFocus = FocusNode();
   final FocusNode _assignFocus = FocusNode();
+
+  Color pickerColor = Colors.blue;
 
   final dFormat = DateFormat.yMMMMEEEEd("en_US");
   final tFormat = DateFormat.jm();
@@ -36,6 +39,7 @@ class _ChorePageState extends State<ChorePage> {
 
   var _isPicking = false;
   var _isNotPicking = true;
+  var _isPickingColor = false;
 
   var choreEditController = TextEditingController();
   var nameEditController = TextEditingController();
@@ -44,6 +48,7 @@ class _ChorePageState extends State<ChorePage> {
   var timeEditController = TextEditingController();
 
   var choreList = [];
+  var choreListOld = [];
   DateTime currDate = DateTime.now();
 
   final ref = FirebaseDatabase.instance.reference();
@@ -81,6 +86,10 @@ class _ChorePageState extends State<ChorePage> {
       print("Failed to get user. " + e.toString());
     });
     _showListOfChores();
+  }
+
+  void changeColor(Color color) {
+    setState(() => pickerColor = color);
   }
 
   void _showDialog(_title, _message) {
@@ -128,12 +137,20 @@ class _ChorePageState extends State<ChorePage> {
     ref.child("House/" + houseName + "/Chores/").once().then((ds) {
       var tempList = [];
       ds.value.forEach((k, v) {
-        if (!v['Done'] ||
-            v['Date Info'].compareTo(DateTime.now().toString()) == 0) {
+        if (!v['Done']) {
           tempList.add(v);
+        } else {
+          tempList.insert(0, v);
         }
       });
-      tempList.sort((a, b) => (a['Date Info'].compareTo(b['Date Info'])));
+      tempList.sort((a, b) {
+        if (a['Done'] && !b['Done'])
+          return 0;
+        else
+          return a['Date Info'].compareTo(b['Date Info']);
+      });
+
+      //=> (a['Date Info'].compareTo(b['Date Info'])) && a['Done']);
       choreList.clear();
       setState(() {
         choreList = tempList;
@@ -159,7 +176,7 @@ class _ChorePageState extends State<ChorePage> {
                 });*/
   }
 
-  void _addChore(_chore, _who, _date, _time) {
+  void _addChore(_chore, _who, _date, _time, _color) {
     var dateSplit = _date.split(" ");
     var myMonth = dateSplit[1];
     var myDay = dateSplit[2].substring(0, dateSplit[2].length - 1);
@@ -195,22 +212,22 @@ class _ChorePageState extends State<ChorePage> {
         myHour, int.parse(myMinute));
     print(myDate);
 
-    //print(userFName);
-
+    print(_color);
     //write a data: key, value
     ref
         .child("House/" +
-            houseName +
-            "/Chores/" +
-            userFName +
-            new DateTime.now().millisecondsSinceEpoch.toString())
+        houseName +
+        "/Chores/" +
+        userFName +
+        new DateTime.now().millisecondsSinceEpoch.toString())
         .set({
       "Chore Name": _chore,
       "Chore Assigned To": _who,
       "Date Due": _date,
       "Time Due": _time,
       "Date Info": myDate.toIso8601String(),
-      "Done": false
+      "Done": false,
+      "Color": _color.substring(37, _color.length-2)
     }).then((res) {
       print("Chore is added ");
     }).catchError((e) {
@@ -232,74 +249,6 @@ class _ChorePageState extends State<ChorePage> {
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
-
-    /*print(ds.value);
-                choreList.sort((a, b) => a['Date Due'].isBefore(b['Date Due']));
-                choreList.clear();
-                ds.value.forEach((k,v) {
-                  setState(() {
-                    choreList.add(v);
-                  });
-                });
-                print("LIST: $choreList");
-                print("");
-                }).catchError((e){
-                  print("Failed to get user. "+e.toString());
-                });*/
-  }
-
-/*  Widget _todoItem(_name, _chore, _date, _time) {
-    return Row(children: <Widget>[
-      Text(_name ),//+ _chore + _date + _time),
-      CheckboxListTile(value: false, onChanged: null)
-    ]);
-  }*/
-
-  Widget _todoItem(_chore, _name, _date, _time, _done) {
-    bool _isDone = _done;
-    var _myChore = _chore;
-    var _myName = _name;
-    var _myDate = _date;
-    var _myTime = _time;
-
-    void _updateCheck(bool value) {
-      print(_isDone);
-      print(!_isDone);
-      setState(() {
-        _isDone = !_isDone;
-      });
-    }
-
-    return Container(
-        child: Row(
-      children: <Widget>[
-        Expanded(
-            flex: 1,
-            child: Column(
-              children: <Widget>[
-                Checkbox(
-                    value: _isDone,
-                    onChanged: (val) {
-                      setState(() {
-                        _isDone = val;
-                      });
-                    }),
-              ],
-            )),
-        Expanded(
-          flex: 9,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                _name + ": " + _chore + "\n" + _date + ", " + _time,
-                //textAlign: TextAlign.left,
-              ),
-            ],
-          ),
-        ),
-      ],
-    ));
   }
 
   @override
@@ -335,7 +284,8 @@ class _ChorePageState extends State<ChorePage> {
                     myDate: choreList[index]['Date Due'],
                     myName: choreList[index]['Chore Assigned To'],
                     myTime: choreList[index]['Time Due'],
-                    myHouse: houseName);
+                    myHouse: houseName,
+                    myColor: Color(int.parse(choreList[index]['Color'], radix: 16)));
               },
             )),
           ),
@@ -431,6 +381,18 @@ class _ChorePageState extends State<ChorePage> {
                   return DateTimeField.convert(time);
                 }),
           ),
+          Visibility(
+              visible: _isPicking,
+              child: RaisedButton(
+                child: Text("Choose Color"),
+                onPressed: () {
+                  setState(() {
+                    _isPicking = false;
+                    _isPickingColor = true;
+                  });
+                },
+                color: pickerColor,
+              )),
           Container(
               child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -448,7 +410,8 @@ class _ChorePageState extends State<ChorePage> {
                             choreEditController.text.toString(),
                             _selectedName,
                             dateEditController.text.toString(),
-                            timeEditController.text.toString());
+                            timeEditController.text.toString(),
+                            pickerColor.toString());
                         _showListOfChores();
                         setState(() {
                           _isNotPicking = true;
@@ -479,6 +442,30 @@ class _ChorePageState extends State<ChorePage> {
                   )),
             ],
           )),
+          Visibility(
+              visible: _isPickingColor,
+              child: BlockPicker(
+                pickerColor: pickerColor,
+                onColorChanged: changeColor,
+              )),
+          Visibility(
+              visible: _isPickingColor,
+              child: SizedBox(
+                height: 20,
+              )),
+          Visibility(
+              visible: _isPickingColor,
+              child: RaisedButton(
+                child: Text("Confirm"),
+                color: pickerColor,
+                textColor: Colors.black,
+                onPressed: () {
+                  setState(() {
+                    _isPickingColor = false;
+                    _isPicking = true;
+                  });
+                },
+              )),
           Visibility(
               visible: _isNotPicking,
               child: RaisedButton(

@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:roommate_app/todo_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class ShoppingPage extends StatefulWidget {
   final FirebaseUser currentUser;
@@ -32,6 +33,9 @@ class _ShoppingPageState extends State<ShoppingPage> {
 
   var _isPicking = false;
   var _isNotPicking = true;
+  var _isPickingColor = false;
+
+  Color pickerColor = Colors.blue;
 
   var choreEditController = TextEditingController();
   var nameEditController = TextEditingController();
@@ -77,6 +81,10 @@ class _ShoppingPageState extends State<ShoppingPage> {
       print("Failed to get user. " + e.toString());
     });
     _showListOfItems();
+  }
+
+  void changeColor(Color color) {
+    setState(() => pickerColor = color);
   }
 
   void _showDialog(_title, _message) {
@@ -126,6 +134,8 @@ class _ShoppingPageState extends State<ShoppingPage> {
       ds.value.forEach((k, v) {
         if(!v['Done'])
           tempList.add(v);
+        else
+          tempList.insert(0, v);
       });
       choreList.clear();
       setState(() {
@@ -150,7 +160,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
                 });*/
   }
 
-  void _addItem(_item) {
+  void _addItem(_item, _color) {
 
     //write a data: key, value
     ref
@@ -161,7 +171,8 @@ class _ShoppingPageState extends State<ShoppingPage> {
         new DateTime.now().millisecondsSinceEpoch.toString())
         .set({
       "Item Name": _item,
-      "Done": false
+      "Done": false,
+      "Color": _color.substring(37, _color.length-2)
     }).then((res) {
       print("Chore is added ");
     }).catchError((e) {
@@ -218,7 +229,8 @@ class _ShoppingPageState extends State<ShoppingPage> {
                   return ShoppingItem(
                     isDone: choreList[index]['Done'],
                     myItem: choreList[index]['Item Name'],
-                    myHouse: houseName
+                    myHouse: houseName,
+                    myColor: Color(int.parse(choreList[index]['Color'], radix: 16)),
                   );
                 },
               )),
@@ -237,6 +249,18 @@ class _ShoppingPageState extends State<ShoppingPage> {
               ),
             ),
           ),
+          Visibility(
+              visible: _isPicking,
+              child: RaisedButton(
+                child: Text("Choose Color"),
+                onPressed: () {
+                  setState(() {
+                    _isPicking = false;
+                    _isPickingColor = true;
+                  });
+                },
+                color: pickerColor,
+              )),
           Container(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -249,7 +273,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
                           if (
                               choreEditController.text.toString() != "") {
                             _addItem(
-                                choreEditController.text.toString());
+                                choreEditController.text.toString(), pickerColor.toString());
                             _showListOfItems();
                             setState(() {
                               _isNotPicking = true;
@@ -275,6 +299,30 @@ class _ShoppingPageState extends State<ShoppingPage> {
                         },
                       )),
                 ],
+              )),
+          Visibility(
+              visible: _isPickingColor,
+              child: BlockPicker(
+                pickerColor: pickerColor,
+                onColorChanged: changeColor,
+              )),
+          Visibility(
+              visible: _isPickingColor,
+              child: SizedBox(
+                height: 20,
+              )),
+          Visibility(
+              visible: _isPickingColor,
+              child: RaisedButton(
+                child: Text("Confirm"),
+                color: pickerColor,
+                textColor: Colors.black,
+                onPressed: () {
+                  setState(() {
+                    _isPickingColor = false;
+                    _isPicking = true;
+                  });
+                },
               )),
           Visibility(
               visible: _isNotPicking,

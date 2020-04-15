@@ -8,6 +8,7 @@ class ToDoItem extends StatefulWidget {
   String myDate;
   String myTime;
   String myHouse;
+  Color myColor;
 
   ToDoItem(
       {Key key,
@@ -16,7 +17,8 @@ class ToDoItem extends StatefulWidget {
       this.myName,
       this.myDate,
       this.myTime,
-      this.myHouse})
+      this.myHouse,
+      this.myColor})
       : super(key: key);
 
   @override
@@ -27,8 +29,10 @@ class ShoppingItem extends StatefulWidget {
   bool isDone;
   String myItem;
   String myHouse;
+  Color myColor;
 
-  ShoppingItem({Key key, this.isDone, this.myItem, this.myHouse}) : super(key: key);
+  ShoppingItem({Key key, this.isDone, this.myItem, this.myHouse, this.myColor})
+      : super(key: key);
 
   @override
   _ShoppingItemState createState() => _ShoppingItemState();
@@ -39,7 +43,8 @@ class _ToDoItemState extends State<ToDoItem> {
   final ref2 = FirebaseDatabase.instance.reference();
   var choreList = [];
 
-  void _updateStatus(chore, date, name, time, done) {
+  void _updateStatus(chore, date, name, time, done, color) {
+    print("UPDATING?");
     ref.child("House/${widget.myHouse}/Chores/").once().then((ds) {
       ds.value.forEach((k, v) {
         if (v['Chore Name'] == chore &&
@@ -63,35 +68,42 @@ class _ToDoItemState extends State<ToDoItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
+        margin: EdgeInsets.fromLTRB(4, 6, 4, 0),
+        decoration: BoxDecoration(
+          color: widget.myColor,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25.0),
+              bottomRight: Radius.circular(25.0))),
         child: Row(
-      children: <Widget>[
-        Expanded(
-            flex: 1,
-            child: Column(
-              children: <Widget>[
-                Checkbox(
-                    value: widget.isDone,
-                    onChanged: (val) {
-                      _updateStatus(widget.myChore, widget.myDate,
-                          widget.myName, widget.myTime, val);
-                      setState(() {
-                        widget.isDone = val;
-                      });
-                    }),
-              ],
-            )),
-        Expanded(
-          flex: 9,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                  "${widget.myName}: ${widget.myChore} \n${widget.myDate}, ${widget.myTime}"),
-            ],
-          ),
-        ),
-      ],
-    ));
+          children: <Widget>[
+            Expanded(
+                flex: 1,
+                child: Column(
+                  children: <Widget>[
+                    Checkbox(
+                        value: widget.isDone,
+                        onChanged: (val) {
+                          _updateStatus(widget.myChore, widget.myDate,
+                              widget.myName, widget.myTime, val, widget.myColor);
+                          setState(() {
+                            widget.isDone = val;
+                          });
+                        }),
+                  ],
+                )),
+            Expanded(
+              flex: 9,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                      "${widget.myName}: ${widget.myChore} \n${widget.myDate}, ${widget.myTime}"),
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 }
 
@@ -100,13 +112,12 @@ class _ShoppingItemState extends State<ShoppingItem> {
   final ref2 = FirebaseDatabase.instance.reference();
   var choreList = [];
 
-  void _updateStatus(item, done) {
+  void _updateStatus(item, done, color) {
     print("Running _updateStatus");
     print(widget.myHouse);
     ref.child("House/${widget.myHouse}/Items/").once().then((ds) {
       ds.value.forEach((k, v) {
-        if (
-            v['Item Name'] == item) {
+        if (v['Item Name'] == item) {
           ref2
               .child("House/${widget.myHouse}/Items/" + k)
               .update({"Done": done}).then((res) {
@@ -124,6 +135,13 @@ class _ShoppingItemState extends State<ShoppingItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
+        margin: EdgeInsets.fromLTRB(4, 6, 4, 0),
+        decoration: BoxDecoration(
+            color: widget.myColor,
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25.0),
+                bottomRight: Radius.circular(25.0))),
         child: Row(
       children: <Widget>[
         Expanded(
@@ -133,7 +151,7 @@ class _ShoppingItemState extends State<ShoppingItem> {
                 Checkbox(
                     value: widget.isDone,
                     onChanged: (val) {
-                      _updateStatus(widget.myItem, val);
+                      _updateStatus(widget.myItem, val, widget.myColor);
                       setState(() {
                         widget.isDone = val;
                       });
@@ -145,8 +163,7 @@ class _ShoppingItemState extends State<ShoppingItem> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                  "${widget.myItem}"),
+              Text("${widget.myItem}"),
             ],
           ),
         ),

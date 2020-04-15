@@ -38,6 +38,7 @@ dependencies:
 
   datetime_picker_formfield: ^1.0.0
   shared_preferences: ^0.4.2
+  flutter_colorpicker: ^0.3.2
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.3"

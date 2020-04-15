@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:roommate_app/login_page.dart';
 import 'package:roommate_app/home_page.dart';
 import 'package:roommate_app/authenticator.dart';
@@ -9,6 +10,9 @@ void main() => runApp(
       ChangeNotifierProvider<AuthService>(
         child: MyApp(),
         builder: (BuildContext context) {
+          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+          ));
           return AuthService();
         },
       ),
@@ -19,6 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: FutureBuilder<FirebaseUser>(
