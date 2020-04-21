@@ -69,15 +69,32 @@ class _ChorePageState extends State<ChorePage> {
   }
 
   initUser() async {
-    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+/*    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
     setState(() {
       houseName = (sharedPrefs.getString('House Name'));
-    });
+    });*/
     user = await _auth.currentUser();
     ref
+        .child("Users/" + user.uid)
+        .once()
+        .then((ds) {
+      houseName = ds.value['House'];
+      userFName = ds.value['User First Name'];
+      welcomeMessage = "Welcome $userFName!";
+      print(houseName);
+      print(userFName);
+      setState(() {});
+      _showListOfChores();
+    }).catchError((e) {
+      print("Failed to get user. " + e.toString());
+    });
+
+
+    /*ref
         .child("House/" + houseName + "/Users/" + user.uid + "/User First Name")
         .once()
         .then((ds) {
+          print(user.uid);
       userFName = ds.value;
       currId = user.uid;
       welcomeMessage = "Welcome $userFName";
@@ -85,7 +102,7 @@ class _ChorePageState extends State<ChorePage> {
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
-    _showListOfChores();
+    _showListOfItems();*/
   }
 
   void changeColor(Color color) {
@@ -264,7 +281,7 @@ class _ChorePageState extends State<ChorePage> {
           SizedBox(height: 10.0),
           SizedBox(
             //"Welcome ${widget.currentUser.email}",
-            child: Text(welcomeMessage + "!\n$houseName",
+            child: Text(welcomeMessage + "\n$houseName",
                 textAlign: TextAlign.center),
 //            style: TextStyle(
 //                fontSize: 18,

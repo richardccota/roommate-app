@@ -221,15 +221,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           print("Failed to add the user. " + e.toString());
                         });
 
-                        SharedPreferences myPrefs =
+                      SharedPreferences myPrefs =
                             await SharedPreferences.getInstance();
                         myPrefs.setString('House Name',
                             houseEditController.text.toString().trim());
 
-                        /*                      AuthResult result =
-                        await Provider.of<AuthService>(context).loginUser(
-                            email: _email, password: _password);
-                        print(result);*/
 
                         Navigator.push(
                             context,
