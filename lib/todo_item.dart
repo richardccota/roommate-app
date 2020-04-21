@@ -30,8 +30,9 @@ class ShoppingItem extends StatefulWidget {
   String myItem;
   String myHouse;
   Color myColor;
+  String myName;
 
-  ShoppingItem({Key key, this.isDone, this.myItem, this.myHouse, this.myColor})
+  ShoppingItem({Key key, this.isDone, this.myItem, this.myHouse, this.myColor, this.myName})
       : super(key: key);
 
   @override
@@ -163,7 +164,7 @@ class _ShoppingItemState extends State<ShoppingItem> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("${widget.myItem}"),
+              Text("${widget.myItem}\nAdded By ${widget.myName}"),
             ],
           ),
         ),

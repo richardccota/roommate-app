@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:roommate_app/todo_item.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class ShoppingPage extends StatefulWidget {
@@ -58,8 +57,8 @@ class _ShoppingPageState extends State<ShoppingPage> {
   @override
   void initState() {
     super.initState();
-    //initUser();
-    populateUsers();
+    initUser();
+    //populateUsers();
     //_showListOfItems();
   }
 
@@ -126,16 +125,6 @@ class _ShoppingPageState extends State<ShoppingPage> {
     );
   }
 
-  populateUsers() async {
-    await initUser();
-    ref.child("House/$houseName/Users/").once().then((ds) {
-      ds.value.forEach((k, v) {
-        _names.add(v['User First Name']);
-      });
-    }).catchError((e) {
-      print("Failed to get user4. " + e.toString());
-    });
-  }
 
   void _fieldFocusChange(
       BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
@@ -188,7 +177,8 @@ class _ShoppingPageState extends State<ShoppingPage> {
         .set({
       "Item Name": _item,
       "Done": false,
-      "Color": _color.substring(37, _color.length-2)
+      "Color": _color.substring(37, _color.length-2),
+      "Added By": userFName
     }).then((res) {
       print("Chore is added ");
     }).catchError((e) {
@@ -247,6 +237,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
                     myItem: choreList[index]['Item Name'],
                     myHouse: houseName,
                     myColor: Color(int.parse(choreList[index]['Color'], radix: 16)),
+                    myName: userFName,
                   );
                 },
               )),

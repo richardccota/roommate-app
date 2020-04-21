@@ -1,13 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:roommate_app/authenticator.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:roommate_app/login_page.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:roommate_app/todo_item.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class ChorePage extends StatefulWidget {
@@ -63,8 +59,8 @@ class _ChorePageState extends State<ChorePage> {
   @override
   void initState() {
     super.initState();
-    //initUser();
-    populateUsers();
+    initUser();
+    //populateUsers();
     //_showListOfChores();
   }
 
@@ -85,6 +81,10 @@ class _ChorePageState extends State<ChorePage> {
       print(userFName);
       setState(() {});
       _showListOfChores();
+      setState(() {
+      });
+      populateUsers();
+
     }).catchError((e) {
       print("Failed to get user. " + e.toString());
     });
@@ -133,10 +133,10 @@ class _ChorePageState extends State<ChorePage> {
   }
 
   populateUsers() async {
-    await initUser();
+    //await initUser();
     ref.child("House/$houseName/Users/").once().then((ds) {
       ds.value.forEach((k, v) {
-        _names.add(v['User First Name']);
+        _names.add(v['User First Name'] + " " + v['User Last Name'].substring(0,1));
       });
     }).catchError((e) {
       print("Failed to get user4. " + e.toString());

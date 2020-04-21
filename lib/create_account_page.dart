@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:roommate_app/authenticator.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:roommate_app/home_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateAccountPage extends StatefulWidget {
   @override
@@ -221,11 +220,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           print("Failed to add the user. " + e.toString());
                         });
 
-                      SharedPreferences myPrefs =
+                      /*SharedPreferences myPrefs =
                             await SharedPreferences.getInstance();
                         myPrefs.setString('House Name',
                             houseEditController.text.toString().trim());
-
+*/
 
                         Navigator.push(
                             context,
