@@ -237,7 +237,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
                     myItem: choreList[index]['Item Name'],
                     myHouse: houseName,
                     myColor: Color(int.parse(choreList[index]['Color'], radix: 16)),
-                    myName: userFName,
+                    myName: choreList[index]['Added By'],
                   );
                 },
               )),
